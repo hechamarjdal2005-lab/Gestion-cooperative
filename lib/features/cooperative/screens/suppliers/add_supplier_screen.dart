@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:gcoop/features/cooperative/providers/suppliers_provider.dart';
 import 'package:gcoop/features/auth/providers/auth_provider.dart';
 import 'package:gcoop/core/constants/colors.dart';
+import 'package:gcoop/shared/models/supplier.dart';
 
 class AddSupplierScreen extends ConsumerStatefulWidget {
-  const AddSupplierScreen({super.key});
+  final Supplier? supplier;
+  const AddSupplierScreen({super.key, this.supplier});
 
   @override
   ConsumerState<AddSupplierScreen> createState() => _AddSupplierScreenState();
@@ -13,11 +15,29 @@ class AddSupplierScreen extends ConsumerStatefulWidget {
 
 class _AddSupplierScreenState extends ConsumerState<AddSupplierScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _companyController = TextEditingController();
+  late final TextEditingController _nameController;
+  late final TextEditingController _phoneController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _companyController;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.supplier?.name);
+    _phoneController = TextEditingController(text: widget.supplier?.phone);
+    _emailController = TextEditingController(text: widget.supplier?.email);
+    _companyController = TextEditingController(text: widget.supplier?.address);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _phoneController.dispose();
+    _emailController.dispose();
+    _companyController.dispose();
+    super.dispose();
+  }
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
@@ -27,18 +47,24 @@ class _AddSupplierScreenState extends ConsumerState<AddSupplierScreen> {
       final profile = await ref.read(profileProvider.future);
       if (profile?.cooperativeId == null) throw 'Cooperative not found';
 
-      await Supabase.instance.client.from('suppliers').insert({
+      final supplierData = {
         'cooperative_id': profile!.cooperativeId,
         'name': _nameController.text.trim(),
         'phone': _phoneController.text.trim(),
         'email': _emailController.text.trim(),
-        'address': _companyController.text.trim(), // Use address field for company info or add it
-      });
+        'address': _companyController.text.trim(),
+      };
+
+      if (widget.supplier != null) {
+        await ref.read(suppliersProvider.notifier).updateSupplier(widget.supplier!.id, supplierData);
+      } else {
+        await ref.read(suppliersProvider.notifier).addSupplier(supplierData);
+      }
 
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تمت إضافة المورد بنجاح'), backgroundColor: Colors.green),
+          SnackBar(content: Text(widget.supplier != null ? 'تم تعديل المورد بنجاح' : 'تمت إضافة المورد بنجاح'), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
@@ -54,8 +80,10 @@ class _AddSupplierScreenState extends ConsumerState<AddSupplierScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isEdit = widget.supplier != null;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('إضافة مورد جديد')),
+      appBar: AppBar(title: Text(isEdit ? 'تعديل مورد' : 'إضافة مورد جديد')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -94,7 +122,7 @@ class _AddSupplierScreenState extends ConsumerState<AddSupplierScreen> {
                 ),
                 child: _isLoading 
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('حفظ', style: TextStyle(color: Colors.white, fontSize: 18)),
+                  : Text(isEdit ? 'تعديل' : 'حفظ', style: const TextStyle(color: Colors.white, fontSize: 18)),
               ),
             ],
           ),

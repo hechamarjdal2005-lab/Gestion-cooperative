@@ -39,6 +39,29 @@ class DocumentsNotifier extends AsyncNotifier<List<AppDocument>> {
     });
   }
 
+  Future<void> updateDocument(String id, Map<String, dynamic> data, List<Map<String, dynamic>> items) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final client = Supabase.instance.client;
+
+      await client.from('documents').update(data).eq('id', id);
+
+      // Delete existing items and insert new ones
+      await client.from('document_items').delete().eq('document_id', id);
+
+      final itemsWithDocId = items.map((item) => {
+        ...item,
+        'document_id': id,
+      }).toList();
+
+      if (itemsWithDocId.isNotEmpty) {
+        await client.from('document_items').insert(itemsWithDocId);
+      }
+
+      return build();
+    });
+  }
+
   Future<void> updateDocumentStatus(String documentId, String status) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {

@@ -93,6 +93,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get save => 'Enregistrer';
 
   @override
+  String get edit => 'Modifier';
+
+  @override
+  String get delete => 'Supprimer';
+
+  @override
+  String get cancel => 'Annuler';
+
+  @override
   String get download => 'Télécharger';
 
   @override
@@ -109,4 +118,303 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get language => 'Langue';
+
+  @override
+  String get newDocument => 'Nouveau document';
+
+  @override
+  String get documentType => 'Type de document';
+
+  @override
+  String get invoice => 'Facture';
+
+  @override
+  String get deliveryNote => 'Bon de livraison';
+
+  @override
+  String get purchaseOrder => 'Bon de commande';
+
+  @override
+  String get quote => 'Devis';
+
+  @override
+  String get documentNumber => 'Numéro du document';
+
+  @override
+  String get date => 'Date';
+
+  @override
+  String get selectClient => 'Sélectionner un client';
+
+  @override
+  String get selectProduct => 'Sélectionner un produit';
+
+  @override
+  String get quantity => 'Quantité';
+
+  @override
+  String get unit => 'Unité';
+
+  @override
+  String get unitPrice => 'Prix unitaire';
+
+  @override
+  String get total => 'Total';
+
+  @override
+  String get subtotal => 'Sous-total';
+
+  @override
+  String get discount => 'Remise';
+
+  @override
+  String get tva => 'TVA';
+
+  @override
+  String get totalToPay => 'Total à payer';
+
+  @override
+  String get deliveryFees => 'Frais de livraison';
+
+  @override
+  String get paymentMethod => 'Mode de paiement';
+
+  @override
+  String get cash => 'Espèces';
+
+  @override
+  String get transfer => 'Virement';
+
+  @override
+  String get check => 'Chèque';
+
+  @override
+  String get deliveryLocation => 'Lieu de livraison';
+
+  @override
+  String get deliveryDelay => 'Délai de livraison';
+
+  @override
+  String get notes => 'Notes';
+
+  @override
+  String get saveAndShare => 'Enregistrer & Partager';
+
+  @override
+  String get clientInfo => 'Informations client';
+
+  @override
+  String get name => 'Nom';
+
+  @override
+  String get phone => 'Téléphone';
+
+  @override
+  String get address => 'Adresse';
+
+  @override
+  String get addItem => 'Ajouter un produit';
+
+  @override
+  String get reference => 'Référence';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get clientSignature => 'Signature client';
+
+  @override
+  String get supplierSignature => 'Signature fournisseur';
+
+  @override
+  String get receivedOn => 'Reçu le';
+
+  @override
+  String get deliveredOn => 'Livré le';
+
+  @override
+  String get warranty => 'Garantie';
+
+  @override
+  String get thankYou => 'Merci pour votre confiance';
+
+  @override
+  String get amountInWords => 'Montant en lettres';
+
+  @override
+  String get stamp => 'Cachet';
+
+  @override
+  String get orderRef => 'N° commande';
+
+  @override
+  String get piece => 'Pièce';
+
+  @override
+  String get kg => 'Kg';
+
+  @override
+  String get liter => 'Litre';
+
+  @override
+  String get meter => 'Mètre';
+
+  @override
+  String get documents => 'Documents';
+
+  @override
+  String get documentsList => 'Liste des documents';
+
+  @override
+  String get noDocuments => 'Aucun document enregistré';
+
+  @override
+  String get downloadPdf => 'Télécharger PDF';
+
+  @override
+  String get sharePdf => 'Partager PDF';
+
+  @override
+  String get additionalInfo => 'Informations additionnelles';
+
+  @override
+  String get status => 'Statut';
+
+  @override
+  String get draft => 'Brouillon';
+
+  @override
+  String get validated => 'Validé';
+
+  @override
+  String get cancelled => 'Annulé';
+
+  @override
+  String get pending => 'En attente';
+
+  @override
+  String get searchClient => 'Rechercher un client...';
+
+  @override
+  String get noClients => 'Aucun client pour le moment';
+
+  @override
+  String get noResults => 'Aucun résultat correspondant';
+
+  @override
+  String get confirmDelete => 'Confirmer la suppression';
+
+  @override
+  String get confirmDeleteClient =>
+      'Êtes-vous sûr de vouloir supprimer ce client ?';
+
+  @override
+  String get clientDeleted => 'Client supprimé avec succès';
+
+  @override
+  String get error => 'Erreur';
+
+  @override
+  String get searchSupplier => 'Rechercher un fournisseur...';
+
+  @override
+  String get noSuppliers => 'Aucun fournisseur pour le moment';
+
+  @override
+  String get confirmDeleteSupplier =>
+      'Êtes-vous sûr de vouloir supprimer ce fournisseur ?';
+
+  @override
+  String get supplierDeleted => 'Fournisseur supprimé avec succès';
+
+  @override
+  String get searchProduct => 'Rechercher un produit...';
+
+  @override
+  String get noProducts => 'Aucun produit pour le moment';
+
+  @override
+  String get confirmDeleteProduct =>
+      'Êtes-vous sûr de vouloir supprimer ce produit ?';
+
+  @override
+  String get productDeleted => 'Produit supprimé avec succès';
+
+  @override
+  String get totalExpensesToday => 'Total des dépenses aujourd\'hui';
+
+  @override
+  String get noExpenses => 'Aucune dépense enregistrée';
+
+  @override
+  String get confirmDeleteExpense =>
+      'Êtes-vous sûr de vouloir supprimer cette dépense ?';
+
+  @override
+  String get expenseDeleted => 'Dépense supprimée avec succès';
+
+  @override
+  String get searchDocument => 'Rechercher un document ou client...';
+
+  @override
+  String get confirmDeleteDocument =>
+      'Êtes-vous sûr de vouloir supprimer ce document ?';
+
+  @override
+  String get documentDeleted => 'Document supprimé avec succès';
+
+  @override
+  String get welcome => 'Bienvenue';
+
+  @override
+  String get quickActions => 'Actions rapides';
+
+  @override
+  String get lastOperations => 'Dernières opérations';
+
+  @override
+  String get dailySales => 'Ventes du jour';
+
+  @override
+  String get inventory => 'Inventaire';
+
+  @override
+  String get noOperations => 'Aucune opération pour le moment';
+
+  @override
+  String get cooperative => 'Coopérative';
+
+  @override
+  String get cooperativeInfo => 'Informations coopérative';
+
+  @override
+  String get clientsAndSuppliers => 'Clients et Fournisseurs';
+
+  @override
+  String get helpAndSupport => 'Aide et Support';
+
+  @override
+  String get aboutApp => 'À propos';
+
+  @override
+  String get logoUpdated => 'Logo mis à jour avec succès';
+
+  @override
+  String get yesterday => 'Hier';
+
+  @override
+  String get client => 'Client';
+
+  @override
+  String get supplier => 'Fournisseur';
+
+  @override
+  String get unknown => 'Sans nom';
+
+  @override
+  String get note => 'Note';
+
+  @override
+  String get close => 'Fermer';
 }

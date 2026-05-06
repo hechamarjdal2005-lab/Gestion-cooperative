@@ -4,7 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:gcoop/app/router.dart';
 import 'package:gcoop/core/constants/colors.dart';
 import 'package:gcoop/core/providers/locale_provider.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:gcoop/l10n/app_localizations.dart';
 
 class GCoopApp extends ConsumerWidget {
   const GCoopApp({super.key});

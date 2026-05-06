@@ -25,6 +25,22 @@ class ExpensesNotifier extends AsyncNotifier<List<Expense>> {
       return build();
     });
   }
+
+  Future<void> updateExpense(String id, Map<String, dynamic> data) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await Supabase.instance.client.from('expenses').update(data).eq('id', id);
+      return build();
+    });
+  }
+
+  Future<void> deleteExpense(String id) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await Supabase.instance.client.from('expenses').delete().eq('id', id);
+      return build();
+    });
+  }
 }
 
 final expensesProvider = AsyncNotifierProvider<ExpensesNotifier, List<Expense>>(() {

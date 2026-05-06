@@ -14,6 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   Future<void> _signIn() async {
     // Hide keyboard
@@ -36,9 +37,6 @@ class _LoginScreenState extends State<LoginScreen> {
         password: password,
       );
       
-      // We don't necessarily need context.go('/') here because the 
-      // routerProvider watches authStateProvider and will redirect 
-      // automatically, but keeping it ensures immediate transition.
       if (mounted) context.go('/');
     } catch (e) {
       if (mounted) {
@@ -57,72 +55,148 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    const primaryBlue = Color(0xFF1E3A8A);
+
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.white,
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.business_center, size: 80, color: AppColors.primary),
-              const SizedBox(height: 24),
-              const Text(
-                'GCoop',
-                style: TextStyle(
-                  fontSize: 32, 
-                  fontWeight: FontWeight.bold, 
-                  color: AppColors.primary,
+              // Logo
+              Image.asset(
+                'assets/images/logo.png',
+                height: 100,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.business,
+                  size: 80,
+                  color: primaryBlue,
                 ),
               ),
-              const SizedBox(height: 48),
-              Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(
-                          labelText: 'البريد الإلكتروني / Email',
-                          prefixIcon: Icon(Icons.email),
+              const SizedBox(height: 24),
+              // Header
+              const Text(
+                'مرحباً بك',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: primaryBlue,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'سجل دخولك للمتابعة',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 40),
+              // Form Card
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // Email Field
+                    TextField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      textAlign: TextAlign.right,
+                      decoration: InputDecoration(
+                        hintText: 'البريد الإلكتروني',
+                        prefixIcon: const Icon(Icons.email_outlined, color: primaryBlue),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _passwordController,
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          labelText: 'كلمة المرور / Mot de passe',
-                          prefixIcon: Icon(Icons.lock),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
                         ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: primaryBlue),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
                       ),
-                      const SizedBox(height: 32),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _signIn,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Password Field
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      textAlign: TextAlign.right,
+                      decoration: InputDecoration(
+                        hintText: 'كلمة المرور',
+                        prefixIcon: const Icon(Icons.lock_outline, color: primaryBlue),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                            color: Colors.grey,
                           ),
-                          child: _isLoading
-                              ? const CircularProgressIndicator(color: Colors.white)
-                              : const Text(
-                                  'دخول / Connexion', 
-                                  style: TextStyle(fontSize: 18),
-                                ),
+                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                         ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade200),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: primaryBlue),
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade50,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 32),
+                    // Login Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _signIn,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: primaryBlue,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Text(
+                                'تسجيل الدخول',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

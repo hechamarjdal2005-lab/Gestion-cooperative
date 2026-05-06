@@ -18,6 +18,42 @@ class ClientsNotifier extends AsyncNotifier<List<Client>> {
     return (response as List).map((json) => Client.fromJson(json)).toList();
   }
 
+  Future<void> addClient(Map<String, dynamic> data) async {
+    state = const AsyncLoading();
+    try {
+      await Supabase.instance.client.from('clients').insert(data);
+      ref.invalidateSelf();
+      await future;
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+      rethrow;
+    }
+  }
+
+  Future<void> updateClient(String id, Map<String, dynamic> data) async {
+    state = const AsyncLoading();
+    try {
+      await Supabase.instance.client.from('clients').update(data).eq('id', id);
+      ref.invalidateSelf();
+      await future;
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+      rethrow;
+    }
+  }
+
+  Future<void> deleteClient(String id) async {
+    state = const AsyncLoading();
+    try {
+      await Supabase.instance.client.from('clients').delete().eq('id', id);
+      ref.invalidateSelf();
+      await future;
+    } catch (e) {
+      state = AsyncValue.error(e, StackTrace.current);
+      rethrow;
+    }
+  }
+
   Future<void> refresh() async {
     ref.invalidateSelf();
     await future;

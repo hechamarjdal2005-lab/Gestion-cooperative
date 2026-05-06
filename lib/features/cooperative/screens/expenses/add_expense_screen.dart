@@ -4,9 +4,11 @@ import 'package:intl/intl.dart';
 import 'package:gcoop/features/cooperative/providers/expenses_provider.dart';
 import 'package:gcoop/features/auth/providers/auth_provider.dart';
 import 'package:gcoop/core/constants/colors.dart';
+import 'package:gcoop/shared/models/expense.dart';
 
 class AddExpenseScreen extends ConsumerStatefulWidget {
-  const AddExpenseScreen({super.key});
+  final Expense? expense;
+  const AddExpenseScreen({super.key, this.expense});
 
   @override
   ConsumerState<AddExpenseScreen> createState() => _AddExpenseScreenState();
@@ -14,10 +16,10 @@ class AddExpenseScreen extends ConsumerStatefulWidget {
 
 class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _amountController = TextEditingController();
-  final _noteController = TextEditingController();
-  String _category = 'أخرى';
-  DateTime _date = DateTime.now();
+  late final TextEditingController _amountController;
+  late final TextEditingController _noteController;
+  late String _category;
+  late DateTime _date;
   bool _isLoading = false;
 
   final List<String> _categories = [
@@ -30,6 +32,22 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     'أخرى'
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _amountController = TextEditingController(text: widget.expense?.amount.toString());
+    _noteController = TextEditingController(text: widget.expense?.note);
+    _category = widget.expense?.category ?? 'أخرى';
+    _date = widget.expense?.date ?? DateTime.now();
+  }
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -40,18 +58,24 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
       final amount = double.parse(_amountController.text);
       
-      await ref.read(expensesProvider.notifier).addExpense({
+      final expenseData = {
         'cooperative_id': profile!.cooperativeId,
         'category': _category,
         'amount': amount,
         'date': _date.toIso8601String(),
         'note': _noteController.text.trim(),
-      });
+      };
+
+      if (widget.expense != null) {
+        await ref.read(expensesProvider.notifier).updateExpense(widget.expense!.id, expenseData);
+      } else {
+        await ref.read(expensesProvider.notifier).addExpense(expenseData);
+      }
 
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('تمت إضافة المصروف بنجاح'), backgroundColor: Colors.green),
+          SnackBar(content: Text(widget.expense != null ? 'تم تعديل المصروف بنجاح' : 'تمت إضافة المصروف بنجاح'), backgroundColor: Colors.green),
         );
       }
     } catch (e) {
@@ -67,8 +91,10 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isEdit = widget.expense != null;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('إضافة مصروف')),
+      appBar: AppBar(title: Text(isEdit ? 'تعديل مصروف' : 'إضافة مصروف')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -119,7 +145,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 ),
                 child: _isLoading 
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('حفظ', style: TextStyle(color: Colors.white, fontSize: 18)),
+                  : Text(isEdit ? 'تعديل' : 'حفظ', style: const TextStyle(color: Colors.white, fontSize: 18)),
               ),
             ],
           ),

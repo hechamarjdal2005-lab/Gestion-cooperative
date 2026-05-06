@@ -7,6 +7,7 @@ import 'package:gcoop/features/auth/screens/change_password_screen.dart';
 import 'package:gcoop/features/admin/screens/admin_dashboard_screen.dart';
 import 'package:gcoop/features/cooperative/screens/main_screen.dart';
 import 'package:gcoop/features/auth/providers/auth_provider.dart';
+import 'package:gcoop/features/auth/screens/splash_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -16,12 +17,18 @@ final routerProvider = Provider<GoRouter>((ref) {
   final mustChangePassword = ref.watch(mustChangePasswordProvider);
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/splash',
     redirect: (context, state) async {
       final user = Supabase.instance.client.auth.currentUser;
+      final isSplashing = state.matchedLocation == '/splash';
       final isLoggingIn = state.matchedLocation == '/login';
       final isSetup = state.matchedLocation == '/setup';
       final isChangingPassword = state.matchedLocation == '/change-password';
+
+      // 0. إذا كان في صفحة البداية (Splash)، ابقَ فيها حتى تنتهي الـ 3 ثواني
+      if (isSplashing) {
+        return null;
+      }
 
       // 1. غير مسجل الدخول -> اذهب للدخول
       if (user == null) {
@@ -70,6 +77,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),

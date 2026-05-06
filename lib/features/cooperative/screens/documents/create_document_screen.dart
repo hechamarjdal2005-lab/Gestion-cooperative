@@ -12,11 +12,12 @@ import 'package:gcoop/shared/models/product.dart';
 import 'package:gcoop/core/services/pdf_service.dart';
 import 'package:gcoop/core/utils/amount_to_words.dart';
 import 'package:gcoop/shared/models/cooperative.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:gcoop/l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 class CreateDocumentScreen extends ConsumerStatefulWidget {
-  const CreateDocumentScreen({super.key});
+  final AppDocument? document;
+  const CreateDocumentScreen({super.key, this.document});
 
   @override
   ConsumerState<CreateDocumentScreen> createState() => _CreateDocumentScreenState();
@@ -24,20 +25,62 @@ class CreateDocumentScreen extends ConsumerStatefulWidget {
 
 class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
   final _formKey = GlobalKey<FormState>();
-  String _selectedType = 'FAC';
+  late String _selectedType;
   Client? _selectedClient;
   List<DocumentItem> _items = [];
   bool _isSaving = false;
-  String _paymentMethod = 'Espèces';
-  double _discount = 0;
-  double _tvaRate = 0;
-  double _deliveryFees = 0;
-  String _deliveryLocation = '';
-  String _deliveryDelay = '';
-  String _notes = '';
-  DateTime _selectedDate = DateTime.now();
+  late String _paymentMethod;
+  late double _discount;
+  late double _tvaRate;
+  late double _deliveryFees;
+  late String _deliveryLocation;
+  late String _deliveryDelay;
+  late String _notes;
+  late DateTime _selectedDate;
 
   final _pdfService = PdfService();
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedType = widget.document?.type ?? 'FAC';
+    _paymentMethod = widget.document?.paymentMethod ?? 'Espèces';
+    _discount = widget.document?.discount ?? 0;
+    _tvaRate = widget.document?.tvaRate ?? 0;
+    _deliveryFees = widget.document?.deliveryFees ?? 0;
+    _deliveryLocation = widget.document?.deliveryLocation ?? '';
+    _deliveryDelay = widget.document?.deliveryDelay ?? '';
+    _notes = widget.document?.notes ?? '';
+    _selectedDate = widget.document?.date ?? DateTime.now();
+    
+    if (widget.document != null) {
+      _loadDocumentData();
+    }
+  }
+
+  Future<void> _loadDocumentData() async {
+    try {
+      // Load Client
+      if (widget.document!.clientId != null) {
+        final clients = await ref.read(clientsProvider.future);
+        _selectedClient = clients.firstWhere((c) => c.id == widget.document!.clientId);
+      }
+
+      // Load Items
+      final itemsResponse = await Supabase.instance.client
+          .from('document_items')
+          .select()
+          .eq('document_id', widget.document!.id);
+      
+      if (mounted) {
+        setState(() {
+          _items = (itemsResponse as List).map((json) => DocumentItem.fromJson(json)).toList();
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading document data: $e');
+    }
+  }
 
   void _addItem() {
     setState(() {
@@ -175,16 +218,21 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
       final profile = ref.read(profileProvider).value;
       if (profile?.cooperativeId == null) return;
 
-      final docNumber = await Supabase.instance.client.rpc(
-        'generate_document_number',
-        params: {
-          'p_cooperative_id': profile!.cooperativeId,
-          'p_type': _selectedType,
-        },
-      );
+      String docNumber;
+      if (widget.document != null) {
+        docNumber = widget.document!.number;
+      } else {
+        docNumber = await Supabase.instance.client.rpc(
+          'generate_document_number',
+          params: {
+            'p_cooperative_id': profile!.cooperativeId,
+            'p_type': _selectedType,
+          },
+        );
+      }
 
       final docData = {
-        'cooperative_id': profile.cooperativeId,
+        'cooperative_id': profile?.cooperativeId,
         'type': _selectedType,
         'number': docNumber,
         'client_id': _selectedClient!.id,
@@ -211,10 +259,14 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
         'unit_price': item.unitPrice,
       }).toList();
 
-      await ref.read(documentsProvider.notifier).createDocument(docData, itemsData);
+      if (widget.document != null) {
+        await ref.read(documentsProvider.notifier).updateDocument(widget.document!.id, docData, itemsData);
+      } else {
+        await ref.read(documentsProvider.notifier).createDocument(docData, itemsData);
+      }
 
       if (shareAfter && mounted) {
-        await _shareLastDocument(profile.cooperativeId ?? '', docNumber, itemsData);
+        await _shareLastDocument(profile?.cooperativeId ?? '', docNumber, itemsData);
       }
 
       if (mounted) {

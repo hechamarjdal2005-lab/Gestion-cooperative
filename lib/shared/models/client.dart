@@ -25,4 +25,15 @@ class Client {
       email: json['email'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'cooperative_id': cooperativeId,
+      'name': name,
+      'phone': phone,
+      'address': address,
+      'email': email,
+    };
+  }
 }

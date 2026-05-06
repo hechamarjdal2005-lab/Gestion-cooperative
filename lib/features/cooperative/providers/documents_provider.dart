@@ -11,10 +11,10 @@ class DocumentsNotifier extends AsyncNotifier<List<AppDocument>> {
 
     final response = await Supabase.instance.client
         .from('documents')
-        .select('*, clients(name), suppliers(name)')
+        .select('*, clients(name, phone, address), suppliers(name)')
         .eq('cooperative_id', profile!.cooperativeId!)
         .order('created_at', ascending: false);
-    
+
     return (response as List).map((json) => AppDocument.fromJson(json)).toList();
   }
 
@@ -22,12 +22,43 @@ class DocumentsNotifier extends AsyncNotifier<List<AppDocument>> {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
       final client = Supabase.instance.client;
+
       final docResponse = await client.from('documents').insert(data).select().single();
       final docId = docResponse['id'];
-      
-      final itemsWithDocId = items.map((item) => {...item, 'document_id': docId}).toList();
-      await client.from('document_items').insert(itemsWithDocId);
-      
+
+      final itemsWithDocId = items.map((item) => {
+        ...item,
+        'document_id': docId,
+      }).toList();
+
+      if (itemsWithDocId.isNotEmpty) {
+        await client.from('document_items').insert(itemsWithDocId);
+      }
+
+      return build();
+    });
+  }
+
+  Future<void> updateDocumentStatus(String documentId, String status) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await Supabase.instance.client
+          .from('documents')
+          .update({'status': status})
+          .eq('id', documentId);
+
+      return build();
+    });
+  }
+
+  Future<void> deleteDocument(String documentId) async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      await Supabase.instance.client
+          .from('documents')
+          .delete()
+          .eq('id', documentId);
+
       return build();
     });
   }

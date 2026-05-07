@@ -1,4 +1,4 @@
-name: G-Coop
+name: gcoop
 description: A commercial management app for cooperatives.
 version: 1.0.0+1
 
@@ -18,12 +18,14 @@ dependencies:
   fl_chart: ^0.66.0
   image_picker: ^1.0.7
   share_plus: ^7.2.1
-  intl: 0.19.0
+  intl: ^0.20.2
   cached_network_image: ^3.3.1
   shared_preferences: ^2.2.0
   path_provider: ^2.1.0
   http: ^1.1.0
   url_launcher: ^6.3.2
+  flutter_local_notifications: ^17.2.4
+  timezone: ^0.9.4
 
 dev_dependencies:
   flutter_test:
@@ -33,10 +35,10 @@ dev_dependencies:
 
 flutter_launcher_icons:
   android: "ic_launcher"
-  ios: true
+  ios: false
   image_path: "assets/images/logo.png"
   min_sdk_android: 21
-  adaptive_icon_background: "#000000"
+  adaptive_icon_background: "#FFFFFF"        # ← بيضاء
   adaptive_icon_foreground: "assets/images/logo.png"
   web:
     generate: false

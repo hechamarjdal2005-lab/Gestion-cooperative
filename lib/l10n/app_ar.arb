@@ -42,7 +42,6 @@
   "invoice": "فاتورة",
   "deliveryNote": "وصل التسليم",
   "purchaseOrder": "طلب شراء",
-  "quote": "عرض سعر",
   "documentNumber": "رقم المستند",
   "date": "التاريخ",
   "selectClient": "اختيار الزبون",

@@ -42,7 +42,6 @@
   "invoice": "Facture",
   "deliveryNote": "Bon de livraison",
   "purchaseOrder": "Bon de commande",
-  "quote": "Devis",
   "documentNumber": "Numéro du document",
   "date": "Date",
   "selectClient": "Sélectionner un client",

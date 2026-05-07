@@ -4,7 +4,7 @@ GCoop is a Flutter mobile application designed for cooperatives to manage their 
 
 ## Features
 - **Role-based UI**: Admin (Super Admin) and Admin Cooperative roles.
-- **Commercial Documents**: Create and manage Invoices (FAC), Quotes (DEV), Purchase Orders (BDC), and Delivery Notes (BDL).
+- **Commercial Documents**: Create and manage Invoices (FAC), Purchase Orders (BDC), and Delivery Notes (BDL).
 - **Inventory Management**: Automatic stock updates via database triggers.
 - **Financial Tracking**: Dashboard statistics and expense management.
 - **Professional PDFs**: Generate, share, and print commercial documents.

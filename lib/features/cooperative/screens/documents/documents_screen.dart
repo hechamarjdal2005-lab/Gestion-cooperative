@@ -315,7 +315,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  doc.type == 'FAC' || doc.type == 'DEV' || doc.type == 'BDL' 
+                  doc.type == 'FAC' || doc.type == 'BDL' 
                       ? '${l10n.client}: ${doc.clientName ?? l10n.unknown}'
                       : '${l10n.supplier}: ${doc.supplierName ?? l10n.unknown}',
                   style: const TextStyle(color: Color(0xFF6B7280), fontSize: 14),

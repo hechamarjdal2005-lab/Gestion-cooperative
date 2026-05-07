@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,7 +24,7 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
   List<DocumentItem> _items = [];
   bool _isLoading = true;
   Cooperative? _cooperative;
-  String? _logoBytes;
+  Uint8List? _logoBytes;
 
   @override
   void initState() {
@@ -46,7 +45,7 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
 
       final profile = ref.read(profileProvider).value;
       Cooperative? coop;
-      String? logo;
+      Uint8List? logo;
 
       if (profile?.cooperativeId != null) {
         final coopResponse = await Supabase.instance.client
@@ -96,7 +95,6 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
       cooperative: _cooperative!,
       items: _items,
       isArabic: isArabic,
-      logoBytes: _logoBytes,
     );
 
     if (action == 'download') {
@@ -116,7 +114,6 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isRtl = Localizations.localeOf(context).languageCode == 'ar';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -178,7 +175,7 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.memory(
-                    _decodeBase64(_logoBytes!),
+                    _logoBytes!,
                     width: 50,
                     height: 50,
                     fit: BoxFit.contain,
@@ -274,9 +271,9 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
               color: AppColors.primary,
               borderRadius: BorderRadius.circular(6),
             ),
-            child: Text(
+            child: const Text(
               'CLIENT',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
             ),
           ),
           const SizedBox(width: 12),
@@ -622,9 +619,5 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
         ),
       ),
     );
-  }
-
-  Uint8List _decodeBase64(String base64String) {
-    return base64Decode(base64String);
   }
 }

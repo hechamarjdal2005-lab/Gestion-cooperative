@@ -222,13 +222,7 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
       if (widget.document != null) {
         docNumber = widget.document!.number;
       } else {
-        docNumber = await Supabase.instance.client.rpc(
-          'generate_document_number',
-          params: {
-            'p_cooperative_id': profile!.cooperativeId,
-            'p_type': _selectedType,
-          },
-        );
+        docNumber = await PdfService.getNextDocumentNumber(_selectedType, profile!.cooperativeId!);
       }
 
       final docData = {
@@ -317,17 +311,11 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
       final cooperative = Cooperative.fromJson(coopResponse);
       final isArabic = Localizations.localeOf(context).languageCode == 'ar';
 
-      String? logoBytes;
-      if (cooperative.logoUrl != null) {
-        logoBytes = await _pdfService.fetchLogoAsBase64(cooperative.logoUrl);
-      }
-
       final pdf = await _pdfService.generateDocumentPdf(
         document: document,
         cooperative: cooperative,
         items: document.items,
         isArabic: isArabic,
-        logoBytes: logoBytes,
       );
 
       await _pdfService.sharePdf(pdf, docNumber);
@@ -482,7 +470,6 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
         DropdownMenuItem(value: 'FAC', child: Text(l10n.invoice)),
         DropdownMenuItem(value: 'BDL', child: Text(l10n.deliveryNote)),
         DropdownMenuItem(value: 'BDC', child: Text(l10n.purchaseOrder)),
-        DropdownMenuItem(value: 'DEV', child: Text(l10n.quote)),
       ],
       onChanged: (v) => setState(() => _selectedType = v!),
     );

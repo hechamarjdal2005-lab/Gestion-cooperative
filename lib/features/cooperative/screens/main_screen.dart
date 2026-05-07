@@ -41,7 +41,7 @@ class _MainScreenState extends State<MainScreen> {
           BottomNavigationBarItem(icon: const Icon(Icons.dashboard), label: l10n.dashboard),
           BottomNavigationBarItem(icon: const Icon(Icons.description), label: l10n.invoices),
           BottomNavigationBarItem(icon: const Icon(Icons.inventory_2), label: l10n.products),
-          BottomNavigationBarItem(icon: const Icon(Icons.receipt_long), label: l10n.expenses),
+          BottomNavigationBarItem(icon: const Icon(Icons.account_balance_wallet), label: l10n.financials),
           BottomNavigationBarItem(icon: const Icon(Icons.more_horiz), label: l10n.more),
         ],
       ),

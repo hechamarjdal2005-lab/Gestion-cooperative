@@ -135,9 +135,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get purchaseOrder => 'طلب شراء';
 
   @override
-  String get quote => 'عرض سعر';
-
-  @override
   String get documentNumber => 'رقم المستند';
 
   @override
@@ -412,4 +409,61 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get close => 'إغلاق';
+
+  @override
+  String get income => 'الدخل';
+
+  @override
+  String get incomes => 'المداخيل';
+
+  @override
+  String get financials => 'المالية';
+
+  @override
+  String get addIncome => 'إضافة دخل';
+
+  @override
+  String get newIncome => 'دخل جديد';
+
+  @override
+  String get totalIncome => 'إجمالي المداخيل';
+
+  @override
+  String get totalExpenses => 'إجمالي المصاريف';
+
+  @override
+  String get netBalance => 'الرصيد الصافي';
+
+  @override
+  String get categorySale => 'مبيعات';
+
+  @override
+  String get categoryRent => 'إيجار';
+
+  @override
+  String get categoryGrant => 'منح';
+
+  @override
+  String get categoryOther => 'مداخيل أخرى';
+
+  @override
+  String get sourceManual => 'يدوي';
+
+  @override
+  String get sourceInvoice => 'فاتورة';
+
+  @override
+  String get noIncomes => 'لا توجد مداخيل مسجلة';
+
+  @override
+  String get incomeDeleted => 'تم حذف الدخل بنجاح';
+
+  @override
+  String get confirmDeleteIncome => 'هل أنت متأكد أنك تريد حذف هذا الدخل؟';
+
+  @override
+  String get amount => 'المبلغ';
+
+  @override
+  String get thisMonth => 'هذا الشهر';
 }

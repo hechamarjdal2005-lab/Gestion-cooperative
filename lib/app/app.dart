@@ -5,6 +5,7 @@ import 'package:gcoop/app/router.dart';
 import 'package:gcoop/core/constants/colors.dart';
 import 'package:gcoop/core/providers/locale_provider.dart';
 import 'package:gcoop/l10n/app_localizations.dart';
+import 'package:gcoop/core/services/notification_service.dart';
 
 class GCoopApp extends ConsumerWidget {
   const GCoopApp({super.key});
@@ -13,6 +14,10 @@ class GCoopApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     final locale = ref.watch(localeProvider);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NotificationService.checkAndSendMonthlySummary(ref);
+    });
 
     return MaterialApp.router(
       title: 'GCoop',

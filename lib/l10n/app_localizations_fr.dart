@@ -135,9 +135,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get purchaseOrder => 'Bon de commande';
 
   @override
-  String get quote => 'Devis';
-
-  @override
   String get documentNumber => 'Numéro du document';
 
   @override
@@ -417,4 +414,62 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get close => 'Fermer';
+
+  @override
+  String get income => 'Revenu';
+
+  @override
+  String get incomes => 'Revenus';
+
+  @override
+  String get financials => 'Finances';
+
+  @override
+  String get addIncome => 'Ajouter un revenu';
+
+  @override
+  String get newIncome => 'Nouveau revenu';
+
+  @override
+  String get totalIncome => 'Total des revenus';
+
+  @override
+  String get totalExpenses => 'Total des dépenses';
+
+  @override
+  String get netBalance => 'Solde net';
+
+  @override
+  String get categorySale => 'Ventes';
+
+  @override
+  String get categoryRent => 'Loyer';
+
+  @override
+  String get categoryGrant => 'Subventions';
+
+  @override
+  String get categoryOther => 'Autres revenus';
+
+  @override
+  String get sourceManual => 'Manuel';
+
+  @override
+  String get sourceInvoice => 'Facture';
+
+  @override
+  String get noIncomes => 'Aucun revenu enregistré';
+
+  @override
+  String get incomeDeleted => 'Revenu supprimé avec succès';
+
+  @override
+  String get confirmDeleteIncome =>
+      'Êtes-vous sûr de vouloir supprimer ce revenu ?';
+
+  @override
+  String get amount => 'Montant';
+
+  @override
+  String get thisMonth => 'Ce mois';
 }

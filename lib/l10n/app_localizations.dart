@@ -350,12 +350,6 @@ abstract class AppLocalizations {
   /// **'طلب شراء'**
   String get purchaseOrder;
 
-  /// No description provided for @quote.
-  ///
-  /// In ar, this message translates to:
-  /// **'عرض سعر'**
-  String get quote;
-
   /// No description provided for @documentNumber.
   ///
   /// In ar, this message translates to:
@@ -907,6 +901,120 @@ abstract class AppLocalizations {
   /// In ar, this message translates to:
   /// **'إغلاق'**
   String get close;
+
+  /// No description provided for @income.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدخل'**
+  String get income;
+
+  /// No description provided for @incomes.
+  ///
+  /// In ar, this message translates to:
+  /// **'المداخيل'**
+  String get incomes;
+
+  /// No description provided for @financials.
+  ///
+  /// In ar, this message translates to:
+  /// **'المالية'**
+  String get financials;
+
+  /// No description provided for @addIncome.
+  ///
+  /// In ar, this message translates to:
+  /// **'إضافة دخل'**
+  String get addIncome;
+
+  /// No description provided for @newIncome.
+  ///
+  /// In ar, this message translates to:
+  /// **'دخل جديد'**
+  String get newIncome;
+
+  /// No description provided for @totalIncome.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجمالي المداخيل'**
+  String get totalIncome;
+
+  /// No description provided for @totalExpenses.
+  ///
+  /// In ar, this message translates to:
+  /// **'إجمالي المصاريف'**
+  String get totalExpenses;
+
+  /// No description provided for @netBalance.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرصيد الصافي'**
+  String get netBalance;
+
+  /// No description provided for @categorySale.
+  ///
+  /// In ar, this message translates to:
+  /// **'مبيعات'**
+  String get categorySale;
+
+  /// No description provided for @categoryRent.
+  ///
+  /// In ar, this message translates to:
+  /// **'إيجار'**
+  String get categoryRent;
+
+  /// No description provided for @categoryGrant.
+  ///
+  /// In ar, this message translates to:
+  /// **'منح'**
+  String get categoryGrant;
+
+  /// No description provided for @categoryOther.
+  ///
+  /// In ar, this message translates to:
+  /// **'مداخيل أخرى'**
+  String get categoryOther;
+
+  /// No description provided for @sourceManual.
+  ///
+  /// In ar, this message translates to:
+  /// **'يدوي'**
+  String get sourceManual;
+
+  /// No description provided for @sourceInvoice.
+  ///
+  /// In ar, this message translates to:
+  /// **'فاتورة'**
+  String get sourceInvoice;
+
+  /// No description provided for @noIncomes.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد مداخيل مسجلة'**
+  String get noIncomes;
+
+  /// No description provided for @incomeDeleted.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم حذف الدخل بنجاح'**
+  String get incomeDeleted;
+
+  /// No description provided for @confirmDeleteIncome.
+  ///
+  /// In ar, this message translates to:
+  /// **'هل أنت متأكد أنك تريد حذف هذا الدخل؟'**
+  String get confirmDeleteIncome;
+
+  /// No description provided for @amount.
+  ///
+  /// In ar, this message translates to:
+  /// **'المبلغ'**
+  String get amount;
+
+  /// No description provided for @thisMonth.
+  ///
+  /// In ar, this message translates to:
+  /// **'هذا الشهر'**
+  String get thisMonth;
 }
 
 class _AppLocalizationsDelegate

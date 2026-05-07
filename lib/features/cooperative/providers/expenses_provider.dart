@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../shared/models/expense.dart';
-import '../../auth/providers/auth_provider.dart';
+import 'package:gcoop/shared/models/expense.dart';
+import 'package:gcoop/features/auth/providers/auth_provider.dart';
 
 class ExpensesNotifier extends AsyncNotifier<List<Expense>> {
   @override

@@ -43,12 +43,6 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
             MaterialPageRoute(builder: (context) => const CreateDocumentScreen()),
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Column(
         children: [

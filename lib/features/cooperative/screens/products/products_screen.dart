@@ -30,12 +30,6 @@ class ProductsScreen extends ConsumerWidget {
             MaterialPageRoute(builder: (context) => const ProductFormScreen()),
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.menu), // Assuming menu icon as requested
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Column(
         children: [

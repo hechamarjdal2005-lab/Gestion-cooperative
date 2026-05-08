@@ -36,10 +36,6 @@ class DashboardScreen extends ConsumerWidget {
         elevation: 0,
         centerTitle: true,
         title: Image.asset('assets/images/logo.png', height: 40, color: Colors.white),
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.white),
-          onPressed: () {},
-        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none, color: Colors.white),

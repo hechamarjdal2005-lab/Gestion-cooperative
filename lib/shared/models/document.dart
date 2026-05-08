@@ -3,6 +3,7 @@ class AppDocument {
   final String cooperativeId;
   final String type;
   final String number;
+  final String? name;
   final String? clientId;
   final String? supplierId;
   final String status;
@@ -29,6 +30,7 @@ class AppDocument {
     required this.cooperativeId,
     required this.type,
     required this.number,
+    this.name,
     this.clientId,
     this.supplierId,
     required this.status,
@@ -57,6 +59,7 @@ class AppDocument {
       cooperativeId: json['cooperative_id'],
       type: json['type'],
       number: json['number'],
+      name: json['name'],
       clientId: json['client_id'],
       supplierId: json['supplier_id'],
       status: json['status'],
@@ -86,6 +89,7 @@ class AppDocument {
       'cooperative_id': cooperativeId,
       'type': type,
       'number': number,
+      'name': name,
       'client_id': clientId,
       'supplier_id': supplierId,
       'status': status,

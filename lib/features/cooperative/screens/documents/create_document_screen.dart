@@ -26,6 +26,7 @@ class CreateDocumentScreen extends ConsumerStatefulWidget {
 class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
   final _formKey = GlobalKey<FormState>();
   late String _selectedType;
+  late String _docName;
   Client? _selectedClient;
   List<DocumentItem> _items = [];
   bool _isSaving = false;
@@ -44,6 +45,7 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
   void initState() {
     super.initState();
     _selectedType = widget.document?.type ?? 'FAC';
+    _docName = widget.document?.name ?? '';
     _paymentMethod = widget.document?.paymentMethod ?? 'Espèces';
     _discount = widget.document?.discount ?? 0;
     _tvaRate = widget.document?.tvaRate ?? 0;
@@ -229,6 +231,7 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
         'cooperative_id': profile?.cooperativeId,
         'type': _selectedType,
         'number': docNumber,
+        'name': _docName,
         'client_id': _selectedClient!.id,
         'total': _total,
         'discount': _discount,
@@ -348,6 +351,17 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
                   _buildCard(
                     children: [
                       _buildTypeSelector(l10n),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        initialValue: _docName,
+                        decoration: InputDecoration(
+                          labelText: isRtl ? 'اسم المستند' : 'Nom du document',
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        ),
+                        validator: (v) => v == null || v.isEmpty ? (isRtl ? 'هذا الحقل مطلوب' : 'Ce champ est obligatoire') : null,
+                        onChanged: (v) => _docName = v,
+                      ),
                       const SizedBox(height: 12),
                       _buildDateField(l10n),
                       const SizedBox(height: 12),

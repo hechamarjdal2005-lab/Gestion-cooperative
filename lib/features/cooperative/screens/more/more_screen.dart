@@ -80,10 +80,6 @@ class MoreScreen extends ConsumerWidget {
           l10n.more,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {},
-        ),
       ),
       body: SingleChildScrollView(
         child: Column(

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:gcoop/features/cooperative/providers/incomes_provider.dart';
+import 'package:gcoop/features/cooperative/providers/products_provider.dart';
 import 'package:gcoop/shared/models/income.dart';
+import 'package:gcoop/shared/models/product.dart';
 import 'package:gcoop/l10n/app_localizations.dart';
 
 class IncomeScreen extends ConsumerWidget {
@@ -193,14 +195,44 @@ class AddIncomeScreen extends StatefulWidget {
 class _AddIncomeScreenState extends State<AddIncomeScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
+  final _quantityController = TextEditingController(text: '1');
+  final _unitPriceController = TextEditingController();
   final _noteController = TextEditingController();
   String _selectedCategory = 'مداخيل أخرى';
+  Product? _selectedProduct;
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    _amountController.addListener(_updateFieldsFromAmount);
+    _quantityController.addListener(_calculateTotal);
+    _unitPriceController.addListener(_calculateTotal);
+  }
+
+  void _calculateTotal() {
+    if (_selectedCategory == 'مبيعات') {
+      final qty = double.tryParse(_quantityController.text) ?? 0;
+      final price = double.tryParse(_unitPriceController.text) ?? 0;
+      final total = qty * price;
+      if (total > 0) {
+        _amountController.removeListener(_updateFieldsFromAmount);
+        _amountController.text = total.toStringAsFixed(2);
+        _amountController.addListener(_updateFieldsFromAmount);
+      }
+    }
+  }
+
+  void _updateFieldsFromAmount() {
+    // If user manually edits amount, we don't necessarily update qty/price
+  }
+
+  @override
   void dispose() {
     _amountController.dispose();
+    _quantityController.dispose();
+    _unitPriceController.dispose();
     _noteController.dispose();
     super.dispose();
   }
@@ -216,72 +248,131 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
         backgroundColor: primaryBlue,
         foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              DropdownButtonFormField<String>(
-                value: _selectedCategory,
-                decoration: InputDecoration(
-                  labelText: l10n.category,
-                  border: const OutlineInputBorder(),
-                ),
-                items: [
-                  DropdownMenuItem(value: 'مبيعات', child: Text(l10n.categorySale)),
-                  DropdownMenuItem(value: 'إيجار', child: Text(l10n.categoryRent)),
-                  DropdownMenuItem(value: 'منح', child: Text(l10n.categoryGrant)),
-                  DropdownMenuItem(value: 'مداخيل أخرى', child: Text(l10n.categoryOther)),
-                ],
-                onChanged: (value) {
-                  if (value != null) setState(() => _selectedCategory = value);
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _amountController,
-                decoration: InputDecoration(
-                  labelText: l10n.amount,
-                  border: const OutlineInputBorder(),
-                  suffixText: 'DH',
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) return l10n.error;
-                  if (double.tryParse(value) == null) return l10n.error;
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              ListTile(
-                title: Text(l10n.date),
-                subtitle: Text(DateFormat('yyyy/MM/dd').format(_selectedDate)),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: _selectedDate,
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2100),
-                  );
-                  if (picked != null) setState(() => _selectedDate = picked);
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _noteController,
-                decoration: InputDecoration(
-                  labelText: l10n.note,
-                  border: const OutlineInputBorder(),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 24),
-              Consumer(
-                builder: (context, ref, child) {
-                  return ElevatedButton(
+      body: Consumer(
+        builder: (context, ref, child) {
+          final productsAsync = ref.watch(productsProvider);
+          final products = productsAsync.value ?? [];
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: _selectedCategory,
+                    decoration: InputDecoration(
+                      labelText: l10n.category,
+                      border: const OutlineInputBorder(),
+                    ),
+                    items: [
+                      DropdownMenuItem(value: 'مبيعات', child: Text(l10n.categorySale)),
+                      DropdownMenuItem(value: 'إيجار', child: Text(l10n.categoryRent)),
+                      DropdownMenuItem(value: 'منح', child: Text(l10n.categoryGrant)),
+                      DropdownMenuItem(value: 'مداخيل أخرى', child: Text(l10n.categoryOther)),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          _selectedCategory = value;
+                          if (value != 'مبيعات') {
+                            _selectedProduct = null;
+                            _unitPriceController.clear();
+                          }
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  if (_selectedCategory == 'مبيعات') ...[
+                    DropdownButtonFormField<Product>(
+                      value: _selectedProduct,
+                      decoration: InputDecoration(
+                        labelText: l10n.selectProduct,
+                        border: const OutlineInputBorder(),
+                      ),
+                      items: products.map((p) {
+                        return DropdownMenuItem(value: p, child: Text(p.name));
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() {
+                            _selectedProduct = value;
+                            _unitPriceController.text = value.price.toStringAsFixed(2);
+                          });
+                        }
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _unitPriceController,
+                            decoration: InputDecoration(
+                              labelText: l10n.unitPrice,
+                              border: const OutlineInputBorder(),
+                              suffixText: 'DH',
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _quantityController,
+                            decoration: InputDecoration(
+                              labelText: l10n.quantity,
+                              border: const OutlineInputBorder(),
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  TextFormField(
+                    controller: _amountController,
+                    decoration: InputDecoration(
+                      labelText: l10n.amount,
+                      border: const OutlineInputBorder(),
+                      suffixText: 'DH',
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) return l10n.error;
+                      if (double.tryParse(value) == null) return l10n.error;
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  ListTile(
+                    title: Text(l10n.date),
+                    subtitle: Text(DateFormat('yyyy/MM/dd').format(_selectedDate)),
+                    trailing: const Icon(Icons.calendar_today),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _selectedDate,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2100),
+                      );
+                      if (picked != null) setState(() => _selectedDate = picked);
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _noteController,
+                    decoration: InputDecoration(
+                      labelText: l10n.note,
+                      border: const OutlineInputBorder(),
+                    ),
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
                     onPressed: _isLoading ? null : () => _submit(ref),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryBlue,
@@ -291,12 +382,12 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                     child: _isLoading
                         ? const CircularProgressIndicator(color: Colors.white)
                         : Text(l10n.save),
-                  );
-                },
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

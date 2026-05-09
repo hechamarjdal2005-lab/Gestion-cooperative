@@ -192,8 +192,6 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
         return 'FAC-$dateStr';
       case 'BDL':
         return 'BL-$dateStr';
-      case 'BDC':
-        return 'CMD-$dateStr';
       case 'DEV':
         return 'DEV-$dateStr';
       default:
@@ -312,7 +310,9 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
           .single();
 
       final cooperative = Cooperative.fromJson(coopResponse);
-      final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+      
+      // Devis is always in French as per request
+      final isArabic = _selectedType == 'DEV' ? false : (Localizations.localeOf(context).languageCode == 'ar');
 
       final pdf = await _pdfService.generateDocumentPdf(
         document: document,
@@ -350,7 +350,7 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
                 children: [
                   _buildCard(
                     children: [
-                      _buildTypeSelector(l10n),
+                      _buildTypeSelector(l10n, isRtl),
                       const SizedBox(height: 12),
                       TextFormField(
                         initialValue: _docName,
@@ -369,7 +369,7 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  if (_selectedType == 'FAC' || _selectedType == 'BDC') ...[
+                  if (_selectedType == 'FAC' || _selectedType == 'DEV') ...[
                     _buildCard(
                       children: [
                         _buildPaymentMethodField(l10n),
@@ -377,16 +377,6 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
                         _buildDiscountField(l10n),
                         const SizedBox(height: 12),
                         _buildTvaField(l10n),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                  if (_selectedType == 'BDC') ...[
-                    _buildCard(
-                      children: [
-                        _buildDeliveryDelayField(l10n),
-                        const SizedBox(height: 12),
-                        _buildDeliveryFeesField(l10n),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -472,7 +462,7 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
     );
   }
 
-  Widget _buildTypeSelector(AppLocalizations l10n) {
+  Widget _buildTypeSelector(AppLocalizations l10n, bool isRtl) {
     return DropdownButtonFormField<String>(
       value: _selectedType,
       decoration: InputDecoration(
@@ -483,7 +473,7 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
       items: [
         DropdownMenuItem(value: 'FAC', child: Text(l10n.invoice)),
         DropdownMenuItem(value: 'BDL', child: Text(l10n.deliveryNote)),
-        DropdownMenuItem(value: 'BDC', child: Text(l10n.purchaseOrder)),
+        DropdownMenuItem(value: 'DEV', child: Text(isRtl ? 'عرض الثمن' : 'Devis')),
       ],
       onChanged: (v) => setState(() => _selectedType = v!),
     );

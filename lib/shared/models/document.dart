@@ -117,8 +117,8 @@ class AppDocument {
         return 'FACTURE';
       case 'BDL':
         return 'BON DE LIVRAISON';
-      case 'BDC':
-        return 'BON DE COMMANDE';
+      case 'DEV':
+        return 'DEVIS';
       default:
         return type;
     }

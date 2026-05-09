@@ -25,13 +25,13 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   late final TextEditingController _amountController;
   late final TextEditingController _noteController;
   late final TextEditingController _quantityController;
+  late final TextEditingController _unitPriceController;
   late String _category;
   late DateTime _date;
   bool _isLoading = false;
 
   // Task 1: Product selection state
   Product? _selectedProduct;
-  double _unitPrice = 0;
   int _quantity = 1;
 
   final Map<int, String> arabicMonths = {
@@ -52,8 +52,12 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     _amountController = TextEditingController(text: widget.expense?.amount.toString());
     _noteController = TextEditingController(text: widget.expense?.note);
     _quantityController = TextEditingController(text: '1');
+    _unitPriceController = TextEditingController(text: '0.00');
     _category = widget.expense?.category ?? _categories.first;
     _date = widget.expense?.date ?? DateTime.now();
+
+    _quantityController.addListener(_calculateTotal);
+    _unitPriceController.addListener(_calculateTotal);
   }
 
   @override
@@ -61,12 +65,15 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
     _amountController.dispose();
     _noteController.dispose();
     _quantityController.dispose();
+    _unitPriceController.dispose();
     super.dispose();
   }
 
   void _calculateTotal() {
-    if (_category == 'مبيعات' && _selectedProduct != null) {
-      final total = _quantity * _unitPrice;
+    if (_category == 'مبيعات') {
+      final qty = double.tryParse(_quantityController.text) ?? 0;
+      final price = double.tryParse(_unitPriceController.text) ?? 0;
+      final total = qty * price;
       _amountController.text = total.toStringAsFixed(2);
     }
   }
@@ -190,7 +197,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                     onChanged: (val) {
                       setState(() {
                         _selectedProduct = val;
-                        _unitPrice = val?.price ?? 0;
+                        _unitPriceController.text = val?.price.toStringAsFixed(2) ?? '0.00';
                         _calculateTotal();
                       });
                     },
@@ -217,12 +224,6 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                             ),
                             keyboardType: TextInputType.number,
-                            onChanged: (val) {
-                              setState(() {
-                                _quantity = int.tryParse(val) ?? 1;
-                                _calculateTotal();
-                              });
-                            },
                           ),
                         ],
                       ),
@@ -234,13 +235,15 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                         children: [
                           const Text('الثمن الوحدوي', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                           const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(12),
+                          TextFormField(
+                            controller: _unitPriceController,
+                            decoration: InputDecoration(
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                              suffixText: 'DH',
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                             ),
-                            child: Text('${_unitPrice.toStringAsFixed(2)} DH', style: const TextStyle(fontSize: 16)),
+                            keyboardType: const TextInputType.numberWithOptions(decimal: true),
                           ),
                         ],
                       ),

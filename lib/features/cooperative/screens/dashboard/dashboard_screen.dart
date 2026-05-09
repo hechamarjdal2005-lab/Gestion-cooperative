@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:gcoop/core/constants/colors.dart';
 import 'package:gcoop/features/auth/providers/auth_provider.dart';
 import 'package:gcoop/features/cooperative/providers/documents_provider.dart';
 import 'package:gcoop/features/cooperative/providers/products_provider.dart';
@@ -173,7 +172,7 @@ class DashboardScreen extends ConsumerWidget {
                 value: '${todayTotal.toStringAsFixed(0)} DH',
                 icon: Icons.trending_up,
                 color: Colors.green,
-                trend: '', // Removed hardcoded trend comparison for now
+                trend: '', 
                 trendColor: Colors.green,
               );
             })(),

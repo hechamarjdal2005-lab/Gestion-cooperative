@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -43,43 +43,362 @@ class PdfService {
       }
     }
 
+    if (document.type == 'DEV') {
+      // Professional French Devis
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(30),
+          textDirection: pw.TextDirection.ltr,
+          theme: pw.ThemeData.withFont(base: font, bold: fontBold),
+          build: (context) => [
+            _buildDevisHeader(cooperative, logoImage),
+            pw.SizedBox(height: 20),
+            _buildDevisInfoSection(cooperative, document),
+            pw.SizedBox(height: 20),
+            _buildDevisDocInfo(document),
+            pw.SizedBox(height: 20),
+            _buildDevisItemsTable(items),
+            pw.SizedBox(height: 20),
+            _buildDevisTotals(document, items),
+            pw.SizedBox(height: 40),
+            _buildDevisFooter(cooperative),
+          ],
+        ),
+      );
+    } else {
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(30),
+          textDirection: isArabic ? pw.TextDirection.rtl : pw.TextDirection.ltr,
+          theme: pw.ThemeData.withFont(base: font, bold: fontBold),
+          header: (context) => _buildHeader(cooperative, document, isArabic, logoImage),
+          footer: (context) => _buildFooter(cooperative),
+          build: (context) => [
+            pw.SizedBox(height: 20),
+            _buildInfoSection(document, isArabic),
+            pw.SizedBox(height: 25),
+            _buildItemsTable(items, document.type, isArabic),
+            pw.SizedBox(height: 20),
+            
+            if (document.type == 'FAC' || document.type == 'BDC') ...[
+              _buildTotalsSection(document, items, isArabic),
+            ] else if (document.type == 'BDL') ...[
+              _buildDeliverySpecifics(document, isArabic),
+            ],
+            
+            pw.SizedBox(height: 30),
+            _buildSignatures(document, isArabic),
+          ],
+        ),
+      );
+    }
+
+    return pdf;
+  }
+
+  // --- DEVIS FRENCH LAYOUT ---
+
+  pw.Widget _buildDevisHeader(Cooperative coop, pw.MemoryImage? logo) {
+    return pw.Row(
+      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+      children: [
+        if (logo != null)
+          pw.Container(width: 80, height: 80, child: pw.Image(logo))
+        else
+          pw.Container(width: 80, height: 80, color: PdfColors.grey300),
+        pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.end,
+          children: [
+            pw.Text('DEVIS', style: pw.TextStyle(fontSize: 28, fontWeight: pw.FontWeight.bold, color: _primaryColor)),
+            pw.Container(height: 2, width: 100, color: _primaryColor),
+          ],
+        ),
+      ],
+    );
+  }
+
+  pw.Widget _buildDevisInfoSection(Cooperative coop, AppDocument doc) {
+    return pw.Row(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Expanded(
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(coop.name, style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
+              pw.Text(coop.address ?? '', style: const pw.TextStyle(fontSize: 10)),
+              pw.Text(coop.phone ?? '', style: const pw.TextStyle(fontSize: 10)),
+              pw.Text(coop.email ?? '', style: const pw.TextStyle(fontSize: 10)),
+            ],
+          ),
+        ),
+        pw.Expanded(
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text('À L\'ATTENTION DE', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 10, color: PdfColors.grey700)),
+              pw.SizedBox(height: 4),
+              pw.Text(doc.clientName ?? '', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12)),
+              pw.Text(doc.clientAddress ?? '', style: const pw.TextStyle(fontSize: 10)),
+              pw.Text(doc.clientPhone ?? '', style: const pw.TextStyle(fontSize: 10)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  pw.Widget _buildDevisDocInfo(AppDocument doc) {
+    return pw.Row(
+      children: [
+        pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text('Date : ${intl.DateFormat('dd/MM/yyyy').format(doc.date)}', style: const pw.TextStyle(fontSize: 10)),
+            pw.Text('Devis n° : ${doc.number}', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  pw.Widget _buildDevisItemsTable(List<DocumentItem> items) {
+    return pw.TableHelper.fromTextArray(
+      headers: ['DESCRIPTION', 'PRIX UNITAIRE', 'QUANTITÉ', 'TOTAL'],
+      data: items.map((i) => [
+        i.description,
+        '${i.unitPrice.toStringAsFixed(2)} DH',
+        i.quantity.toString(),
+        '${i.total.toStringAsFixed(2)} DH'
+      ]).toList(),
+      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white),
+      headerDecoration: pw.BoxDecoration(color: _primaryColor),
+      cellAlignment: pw.Alignment.center,
+      cellStyle: const pw.TextStyle(fontSize: 10),
+      columnWidths: {
+        0: const pw.FlexColumnWidth(3),
+        1: const pw.FlexColumnWidth(1),
+        2: const pw.FlexColumnWidth(1),
+        3: const pw.FlexColumnWidth(1),
+      },
+    );
+  }
+
+  pw.Widget _buildDevisTotals(AppDocument doc, List<DocumentItem> items) {
+    final subtotal = items.fold<double>(0, (sum, i) => sum + i.total);
+    final discount = subtotal * (doc.discount / 100);
+    final afterDiscount = subtotal - discount;
+    final tva = afterDiscount * (doc.tvaRate / 100);
+    final total = afterDiscount + tva + doc.deliveryFees;
+
+    return pw.Row(
+      mainAxisAlignment: pw.MainAxisAlignment.end,
+      children: [
+        pw.Container(
+          width: 200,
+          child: pw.Column(
+            children: [
+              _devisTotalRow('Sous total :', '${subtotal.toStringAsFixed(2)} DH'),
+              if (doc.discount > 0) _devisTotalRow('Remise (${doc.discount}%) :', '-${discount.toStringAsFixed(2)} DH'),
+              _devisTotalRow('TVA (${doc.tvaRate.toStringAsFixed(0)}%) :', '${tva.toStringAsFixed(2)} DH'),
+              if (doc.deliveryFees > 0) _devisTotalRow('Frais de livraison :', '${doc.deliveryFees.toStringAsFixed(2)} DH'),
+              pw.Divider(),
+              _devisTotalRow('TOTAL :', '${total.toStringAsFixed(2)} DH', isBold: true),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  pw.Widget _devisTotalRow(String label, String value, {bool isBold = false}) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 2),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(label, style: pw.TextStyle(fontSize: 10, fontWeight: isBold ? pw.FontWeight.bold : null)),
+          pw.Text(value, style: pw.TextStyle(fontSize: 10, fontWeight: isBold ? pw.FontWeight.bold : null)),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _buildDevisFooter(Cooperative coop) {
+    return pw.Column(
+      children: [
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+          children: [
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Signature suivie de la mention', style: const pw.TextStyle(fontSize: 8)),
+                pw.Text('«bon pour accord»', style: const pw.TextStyle(fontSize: 8)),
+                pw.SizedBox(height: 50),
+                pw.Container(width: 150, height: 1, color: PdfColors.grey),
+              ],
+            ),
+          ],
+        ),
+        pw.SizedBox(height: 20),
+        pw.Divider(),
+        pw.Text('${coop.phone ?? ""} | ${coop.email ?? ""} | ${coop.address ?? ""}', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey700)),
+      ],
+    );
+  }
+
+  // --- FINANCIAL REPORT ---
+
+  Future<pw.Document> generateFinancialReportPdf({
+    required DateTime startDate,
+    required DateTime endDate,
+    required List<dynamic> incomes,
+    required List<dynamic> expenses,
+    required Cooperative cooperative,
+    bool isArabic = true,
+  }) async {
+    final pdf = pw.Document();
+    final font = await PdfGoogleFonts.amiriRegular();
+    final fontBold = await PdfGoogleFonts.amiriBold();
+
+    pw.MemoryImage? logoImage;
+    if (cooperative.logoUrl != null && cooperative.logoUrl!.isNotEmpty) {
+      final logoBytes = await _fetchLogoBytes(cooperative.logoUrl!);
+      if (logoBytes != null) logoImage = pw.MemoryImage(logoBytes);
+    }
+
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(30),
-        textDirection: pw.TextDirection.rtl, // RTL as base for Arabic
-        theme: pw.ThemeData.withFont(
-          base: font,
-          bold: fontBold,
-        ),
-        header: (context) => _buildHeader(cooperative, document, isArabic, logoImage),
-        footer: (context) => _buildFooter(cooperative),
+        textDirection: isArabic ? pw.TextDirection.rtl : pw.TextDirection.ltr,
+        theme: pw.ThemeData.withFont(base: font, bold: fontBold),
         build: (context) => [
-          pw.SizedBox(height: 20),
-          _buildInfoSection(document, isArabic),
-          pw.SizedBox(height: 25),
-          _buildItemsTable(items, document.type, isArabic),
-          pw.SizedBox(height: 20),
-          
-          // Document Specific Bottom Sections
-          if (document.type == 'FAC') ...[
-            _buildTotalsSection(document, items, isArabic),
-          ] else if (document.type == 'BDL') ...[
-            _buildDeliverySpecifics(document, isArabic),
-          ] else if (document.type == 'BDC') ...[
-            _buildOrderSpecifics(document, isArabic),
-            pw.SizedBox(height: 15),
-            _buildTotalsSection(document, items, isArabic),
-          ],
-          
+          // Header
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              if (logoImage != null) pw.Container(width: 60, height: 60, child: pw.Image(logoImage)),
+              pw.Column(
+                crossAxisAlignment: isArabic ? pw.CrossAxisAlignment.start : pw.CrossAxisAlignment.end,
+                children: [
+                  pw.Text(
+                    isArabic ? 'التقرير المالي' : 'Rapport Financier', 
+                    style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold, color: _primaryColor)
+                  ),
+                  pw.Text(
+                    isArabic 
+                      ? 'الفترة : من ${intl.DateFormat('dd/MM/yyyy').format(startDate)} إلى ${intl.DateFormat('dd/MM/yyyy').format(endDate)}'
+                      : 'Période : ${intl.DateFormat('dd/MM/yyyy').format(startDate)} au ${intl.DateFormat('dd/MM/yyyy').format(endDate)}', 
+                    style: const pw.TextStyle(fontSize: 10)
+                  ),
+                ],
+              ),
+            ],
+          ),
           pw.SizedBox(height: 30),
-          _buildSignatures(document, isArabic),
+
+          // Section 1 - Revenus
+          pw.Text(isArabic ? 'المداخيل (Revenus)' : 'Revenus', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: _primaryColor)),
+          pw.SizedBox(height: 10),
+          _buildFinancialTable(
+            headers: isArabic 
+              ? ['التاريخ', 'الفئة', 'تفاصيل', 'المبلغ (درهم)']
+              : ['Date', 'Catégorie', 'Détails', 'Montant (DH)'],
+          data: incomes.map((i) => [
+  intl.DateFormat('dd/MM/yyyy').format(i.date),
+  i.category.toString(),
+  (i.note ?? '').toString(),
+  i.amount.toStringAsFixed(2),
+].cast<String>()).toList(),
+            isArabic: isArabic,
+          ),
+          pw.SizedBox(height: 20),
+
+          // Section 2 - Dépenses
+          pw.Text(isArabic ? 'المصاريف (Dépenses)' : 'Dépenses', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.red)),
+          pw.SizedBox(height: 10),
+          _buildFinancialTable(
+            headers: isArabic
+              ? ['التاريخ', 'الفئة', 'المبلغ (درهم)']
+              : ['Date', 'Catégorie', 'Montant (DH)'],
+            data: expenses.map((e) => <String>[
+              intl.DateFormat('dd/MM/yyyy').format(e.date),
+              e.category,
+              '${e.amount.toStringAsFixed(2)}'
+            ]).toList(),
+            isArabic: isArabic,
+          ),
+          pw.SizedBox(height: 30),
+
+          // Summary Box
+          _buildFinancialSummary(incomes, expenses, isArabic),
         ],
       ),
     );
 
     return pdf;
   }
+
+  pw.Widget _buildFinancialTable({required List<String> headers, required List<List<String>> data, bool isArabic = false}) {
+    return pw.TableHelper.fromTextArray(
+      headers: headers,
+      data: data,
+      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white, fontSize: 10),
+      headerDecoration: pw.BoxDecoration(color: _primaryColor),
+      cellAlignment: pw.Alignment.center,
+      cellStyle: const pw.TextStyle(fontSize: 9),
+      headerDirection: isArabic ? pw.TextDirection.rtl : pw.TextDirection.ltr,
+      tableDirection: isArabic ? pw.TextDirection.rtl : pw.TextDirection.ltr,
+    );
+  }
+
+  pw.Widget _buildFinancialSummary(List<dynamic> incomes, List<dynamic> expenses, bool isArabic) {
+    final totalIncomes = incomes.fold<double>(0, (sum, i) => sum + i.amount);
+    final totalExpenses = expenses.fold<double>(0, (sum, e) => sum + e.amount);
+    final netBalance = totalIncomes - totalExpenses;
+
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(15),
+      decoration: pw.BoxDecoration(
+        color: PdfColors.grey100,
+        borderRadius: pw.BorderRadius.circular(8),
+        border: pw.Border.all(color: PdfColors.grey300),
+      ),
+      child: pw.Column(
+        children: [
+          _summaryRow(isArabic ? 'إجمالي المداخيل :' : 'Total Revenus :', '${totalIncomes.toStringAsFixed(2)} DH', isArabic: isArabic),
+          _summaryRow(isArabic ? 'إجمالي المصاريف :' : 'Total Dépenses :', '${totalExpenses.toStringAsFixed(2)} DH', isArabic: isArabic),
+          pw.Divider(),
+          _summaryRow(
+            isArabic ? 'الرصيد الصافي :' : 'Solde Net :', 
+            '${netBalance.toStringAsFixed(2)} DH', 
+            isBold: true,
+            color: netBalance >= 0 ? PdfColors.green : PdfColors.red,
+            isArabic: isArabic,
+          ),
+        ],
+      ),
+    );
+  }
+
+  pw.Widget _summaryRow(String label, String value, {bool isBold = false, PdfColor? color, bool isArabic = false}) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 4),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(label, style: pw.TextStyle(fontSize: 12, fontWeight: isBold ? pw.FontWeight.bold : null)),
+          pw.Text(value, style: pw.TextStyle(fontSize: 12, fontWeight: isBold ? pw.FontWeight.bold : null, color: color)),
+        ],
+      ),
+    );
+  }
+
+  // --- EXISTING CODE ---
 
   // --- HEADER SECTION ---
   pw.Widget _buildHeader(Cooperative coop, AppDocument doc, bool isArabic, pw.MemoryImage? logoImage) {
@@ -279,7 +598,10 @@ class PdfService {
   // --- TOTALS SECTION ---
   pw.Widget _buildTotalsSection(AppDocument doc, List<DocumentItem> items, bool isArabic) {
     final subtotal = items.fold<double>(0, (sum, item) => sum + item.total);
-    final total = subtotal; // Assuming no VAT for now as per instructions
+    final discount = subtotal * (doc.discount / 100);
+    final afterDiscount = subtotal - discount;
+    final tva = afterDiscount * (doc.tvaRate / 100);
+    final total = afterDiscount + tva + doc.deliveryFees;
 
     return pw.Row(
       mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
@@ -327,7 +649,9 @@ class PdfService {
           child: pw.Column(
             children: [
               _totalRow(isArabic ? 'المجموع الصافي' : 'Sous-total', subtotal.toStringAsFixed(2)),
-              _totalRow(isArabic ? 'الضريبة (0%)' : 'TVA (0%)', '0.00'),
+              if (doc.discount > 0) _totalRow(isArabic ? 'الخصم (${doc.discount}%)' : 'Remise (${doc.discount}%)', '-${discount.toStringAsFixed(2)}'),
+              _totalRow(isArabic ? 'الضريبة (${doc.tvaRate.toStringAsFixed(0)}%)' : 'TVA (${doc.tvaRate.toStringAsFixed(0)}%)', tva.toStringAsFixed(2)),
+              if (doc.deliveryFees > 0) _totalRow(isArabic ? 'مصاريف التسليم' : 'Frais de livraison', doc.deliveryFees.toStringAsFixed(2)),
               pw.SizedBox(height: 5),
               pw.Container(
                 padding: const pw.EdgeInsets.symmetric(vertical: 8, horizontal: 10),
@@ -385,43 +709,6 @@ class PdfService {
               ),
               pw.SizedBox(width: 5),
               pw.Text(doc.deliveryLocation ?? '---', style: const pw.TextStyle(fontSize: 10)),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- BDC SPECIFICS ---
-  pw.Widget _buildOrderSpecifics(AppDocument doc, bool isArabic) {
-    return pw.Container(
-      padding: const pw.EdgeInsets.all(10),
-      decoration: pw.BoxDecoration(
-        border: pw.Border.all(color: _borderColor),
-        borderRadius: pw.BorderRadius.circular(4),
-      ),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.start,
-        children: [
-          pw.Row(
-            children: [
-              pw.Text(
-                isArabic ? 'تاريخ التسليم المتوقع:' : 'Date de livraison prévue:',
-                style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
-              ),
-              pw.SizedBox(width: 5),
-              pw.Text(doc.deliveryDelay ?? '---', style: const pw.TextStyle(fontSize: 10)),
-            ],
-          ),
-          pw.SizedBox(height: 5),
-          pw.Row(
-            children: [
-              pw.Text(
-                isArabic ? 'شروط الأداء:' : 'Modalité de paiement:',
-                style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
-              ),
-              pw.SizedBox(width: 5),
-              pw.Text(doc.paymentMethod ?? '---', style: const pw.TextStyle(fontSize: 10)),
             ],
           ),
         ],
@@ -500,7 +787,7 @@ class PdfService {
         return response.bodyBytes;
       }
     } catch (e) {
-      print('Error fetching logo: $e');
+      debugPrint('Error fetching logo: $e');
     }
     return null;
   }
@@ -512,7 +799,7 @@ class PdfService {
         return response.bodyBytes;
       }
     } catch (e) {
-      print('Error fetching logo: $e');
+      debugPrint('Error fetching logo: $e');
     }
     return null;
   }
@@ -529,7 +816,7 @@ class PdfService {
     switch (type) {
       case 'FAC': prefix = 'FAC'; break;
       case 'BDL': prefix = 'BDL'; break;
-      case 'BDC': prefix = 'BC'; break;
+      case 'DEV': prefix = 'DEV'; break;
       default: prefix = 'DOC';
     }
     
@@ -557,4 +844,3 @@ class PdfService {
     await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdf.save());
   }
 }
-

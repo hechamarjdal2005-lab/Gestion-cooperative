@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:gcoop/features/cooperative/providers/expenses_provider.dart';
 import 'package:gcoop/features/cooperative/providers/incomes_provider.dart';
+import 'package:gcoop/features/auth/providers/auth_provider.dart';
 import 'package:gcoop/core/constants/colors.dart';
 import 'package:gcoop/shared/models/expense.dart';
 import 'package:gcoop/shared/models/income.dart';
+import 'package:gcoop/core/services/pdf_service.dart';
 import 'package:gcoop/features/cooperative/screens/expenses/add_expense_screen.dart';
 import 'package:gcoop/l10n/app_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -17,6 +20,63 @@ class ExpensesScreen extends ConsumerStatefulWidget {
 }
 
 class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
+  final _pdfService = PdfService();
+
+  Future<void> _exportReport() async {
+    final l10n = AppLocalizations.of(context)!;
+    
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+      initialDateRange: DateTimeRange(
+        start: DateTime.now().subtract(const Duration(days: 30)),
+        end: DateTime.now(),
+      ),
+      helpText: l10n.arabic == 'العربية' ? 'اختر الفترة' : 'Choisir la période',
+      cancelText: l10n.cancel,
+      confirmText: l10n.save,
+    );
+
+    if (picked == null) return;
+
+    try {
+      final coopAsync = ref.read(cooperativeProvider);
+      final incomesAsync = ref.read(incomesProvider);
+      final expensesAsync = ref.read(expensesProvider);
+
+      if (coopAsync.value == null) return;
+
+      final startDate = picked.start;
+      final endDate = picked.end.add(const Duration(hours: 23, minutes: 59, seconds: 59));
+
+      final filteredIncomes = (incomesAsync.value ?? []).where((i) => 
+        i.date.isAfter(startDate.subtract(const Duration(seconds: 1))) && 
+        i.date.isBefore(endDate)).toList();
+      
+      final filteredExpenses = (expensesAsync.value ?? []).where((e) => 
+        e.date.isAfter(startDate.subtract(const Duration(seconds: 1))) && 
+        e.date.isBefore(endDate)).toList();
+
+      final pdf = await _pdfService.generateFinancialReportPdf(
+        startDate: picked.start,
+        endDate: picked.end,
+        incomes: filteredIncomes,
+        expenses: filteredExpenses,
+        cooperative: coopAsync.value!,
+        isArabic: l10n.arabic == 'العربية',
+      );
+
+      await _pdfService.sharePdf(pdf, 'Rapport_Financier_${intl.DateFormat('yyyyMMdd').format(picked.start)}');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -35,6 +95,13 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
             l10n.financials,
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.picture_as_pdf),
+              onPressed: _exportReport,
+              tooltip: l10n.downloadPdf,
+            ),
+          ],
           bottom: TabBar(
             indicatorColor: Colors.orange,
             indicatorWeight: 3,

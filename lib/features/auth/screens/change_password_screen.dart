@@ -42,24 +42,19 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('تم تغيير كلمة المرور بنجاح. يرجى تسجيل الدخول مجدداً.'),
+          content: Text('تم تغيير كلمة المرور بنجاح.'),
           backgroundColor: Colors.green,
         ),
       );
 
-      // 3. تسجيل الخروج الإجباري (الحل السحري)
-      // هذا كيخلي التطبيق ينسى الجلسة الحالية ويرجعك لصفحة الدخول
-      await supabase.auth.signOut();
-      
-      // 4. مسح البيانات المخزنة محلياً (Providers)
+      // 3. تحديث البيانات المخزنة محلياً (Providers) والانتظار حتى التحميل
       ref.invalidate(profileProvider);
-      ref.invalidate(mustChangePasswordProvider);
-      ref.invalidate(isCooperativeSetupCompleteProvider);
-
+      await ref.read(profileProvider.future);
+      
       if (!mounted) return;
 
-      // 5. التوجيه لصفحة الدخول
-      context.go('/login');
+      // 4. التوجيه للرئيسية (الراوتر سيتكفل بالباقي)
+      context.go('/');
 
     } catch (e) {
       if (mounted) {
@@ -109,8 +104,8 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
                     border: const OutlineInputBorder(),
                   ),
                   validator: (value) {
-                    if (value == null || value.length < 6) {
-                      return isAr ? 'يجب أن تتكون من 6 أحرف على الأقل' : 'Minimum 6 caractères';
+                    if (value == null || value.length < 8) {
+                      return isAr ? 'يجب أن تتكون من 8 أحرف على الأقل' : 'Minimum 8 caractères';
                     }
                     return null;
                   },

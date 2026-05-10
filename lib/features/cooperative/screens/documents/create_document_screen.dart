@@ -106,6 +106,7 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
+      locale: const Locale('fr', 'FR'),
     );
     if (picked != null) {
       setState(() => _selectedDate = picked);
@@ -323,7 +324,7 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
 
       await _pdfService.sharePdf(pdf, docNumber);
     } catch (e) {
-      debugPrint('Error sharing PDF: $e');
+      // Error sharing PDF
     }
   }
 
@@ -680,15 +681,15 @@ class _CreateDocumentScreenState extends ConsumerState<CreateDocumentScreen> {
   Widget _buildTotalsCard(AppLocalizations l10n) {
     return _buildCard(
       children: [
-        _totalRow(l10n.subtotal, '${_subtotal.toStringAsFixed(2)} DH'),
+        _totalRow(l10n.subtotal, '${NumberFormat('#,##0.00', 'en_US').format(_subtotal)} DH'),
         if (_discount > 0)
-          _totalRow('${l10n.discount} ($_discount%)', '-${_discountAmount.toStringAsFixed(2)} DH', isNegative: true),
+          _totalRow('${l10n.discount} ($_discount%)', '-${NumberFormat('#,##0.00', 'en_US').format(_discountAmount)} DH', isNegative: true),
         if (_tvaRate > 0)
-          _totalRow('${l10n.tva} ($_tvaRate%)', '${_tvaAmount.toStringAsFixed(2)} DH'),
+          _totalRow('${l10n.tva} ($_tvaRate%)', '${NumberFormat('#,##0.00', 'en_US').format(_tvaAmount)} DH'),
         if (_deliveryFees > 0)
-          _totalRow(l10n.deliveryFees, '${_deliveryFees.toStringAsFixed(2)} DH'),
+          _totalRow(l10n.deliveryFees, '${NumberFormat('#,##0.00', 'en_US').format(_deliveryFees)} DH'),
         const Divider(height: 16),
-        _totalRow(l10n.totalToPay, '${_total.toStringAsFixed(2)} DH', isTotal: true),
+        _totalRow(l10n.totalToPay, '${NumberFormat('#,##0.00', 'en_US').format(_total)} DH', isTotal: true),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.all(8),

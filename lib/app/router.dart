@@ -112,7 +112,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('خطأ: $e'),
+                    const Text('حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى.'),
+                    const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: () => ref.invalidate(profileProvider),
                       child: const Text('إعادة المحاولة'),

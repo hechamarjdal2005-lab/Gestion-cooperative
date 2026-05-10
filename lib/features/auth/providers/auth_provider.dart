@@ -77,3 +77,9 @@ final mustChangePasswordProvider = Provider<bool>((ref) {
   
   return profile.mustChangePassword;
 });
+
+// Helper for logout
+Future<void> signOut(WidgetRef ref) async {
+  await Supabase.instance.client.auth.signOut();
+  ref.invalidate(profileProvider);
+}

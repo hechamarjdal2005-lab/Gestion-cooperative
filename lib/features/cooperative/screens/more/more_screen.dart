@@ -174,7 +174,7 @@ class MoreScreen extends ConsumerWidget {
                     icon: Icons.logout,
                     iconColor: accentOrange,
                     labelColor: accentOrange,
-                    onTap: () => Supabase.instance.client.auth.signOut(),
+                    onTap: () => signOut(ref),
                   ),
                 ],
               ),

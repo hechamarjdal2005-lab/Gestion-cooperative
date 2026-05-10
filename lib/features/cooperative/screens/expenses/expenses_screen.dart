@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart' as intl;
+import 'package:intl/intl.dart';
 import 'package:gcoop/features/cooperative/providers/expenses_provider.dart';
 import 'package:gcoop/features/cooperative/providers/incomes_provider.dart';
 import 'package:gcoop/features/auth/providers/auth_provider.dart';
@@ -67,7 +67,7 @@ class _ExpensesScreenState extends ConsumerState<ExpensesScreen> {
         isArabic: l10n.arabic == 'العربية',
       );
 
-      await _pdfService.sharePdf(pdf, 'Rapport_Financier_${intl.DateFormat('yyyyMMdd').format(picked.start)}');
+      await _pdfService.sharePdf(pdf, 'Rapport_Financier_${DateFormat('yyyyMMdd', 'en_US').format(picked.start)}');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -310,7 +310,7 @@ class _BalanceSummary extends ConsumerWidget {
                   Icon(isPositive ? Icons.trending_up : Icons.trending_down, color: isPositive ? Colors.green : Colors.red),
                   const SizedBox(width: 8),
                   Text(
-                    '${netBalance.abs().toStringAsFixed(2)} DH',
+                    '${NumberFormat('#,##0.00', 'en_US').format(netBalance.abs())} DH',
                     style: TextStyle(color: isPositive ? Colors.green : Colors.red, fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -331,12 +331,12 @@ class _BalanceSummary extends ConsumerWidget {
             children: [
               Icon(icon, size: 14, color: color),
               const SizedBox(width: 4),
-              Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
+              Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
             ],
           ),
           const SizedBox(height: 4),
           Text(
-            '${amount.toStringAsFixed(2)} DH',
+            '${NumberFormat('#,##0.00', 'en_US').format(amount)} DH',
             style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ],
@@ -396,7 +396,7 @@ class _FilteredTransactionsList extends ConsumerWidget {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('${item.amount.toStringAsFixed(2)} DH', style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text('${NumberFormat('#,##0.00', 'en_US').format(item.amount)} DH', style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16)),
             _buildActions(context, ref, item),
           ],
         ),
@@ -417,7 +417,7 @@ class _FilteredTransactionsList extends ConsumerWidget {
   }
 
   String _formatDateTime(DateTime dt) {
-    return "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')} - ${dt.year}/${dt.month.toString().padLeft(2, '0')}/${dt.day.toString().padLeft(2, '0')}";
+    return DateFormat('HH:mm - yyyy/MM/dd', 'en_US').format(dt);
   }
 
   Widget _buildActions(BuildContext context, WidgetRef ref, dynamic item) {
@@ -473,7 +473,6 @@ List<dynamic> _filterItems(List<dynamic> items, PeriodFilterState filter) {
       case PeriodType.week:
         final start = filter.date.subtract(Duration(days: filter.date.weekday - 1));
         final end = start.add(const Duration(days: 7));
-        // Reset time for comparison
         final d = DateTime(date.year, date.month, date.day);
         final s = DateTime(start.year, start.month, start.day);
         final e = DateTime(end.year, end.month, end.day);

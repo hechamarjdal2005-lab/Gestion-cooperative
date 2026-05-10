@@ -108,6 +108,14 @@ class _AddClientScreenState extends ConsumerState<AddClientScreen> {
                 controller: _emailController,
                 decoration: const InputDecoration(labelText: 'البريد الإلكتروني (اختياري)'),
                 keyboardType: TextInputType.emailAddress,
+                validator: (val) {
+                  if (val != null && val.isNotEmpty) {
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val)) {
+                      return 'البريد الإلكتروني غير صالح';
+                    }
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
               TextFormField(

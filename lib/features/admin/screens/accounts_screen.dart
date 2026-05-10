@@ -317,7 +317,16 @@ class _AddCooperativeFormState extends ConsumerState<_AddCooperativeForm> {
         filled: true,
         fillColor: Colors.grey[50],
       ),
-      validator: (value) => value == null || value.isEmpty ? 'هذا الحقل مطلوب' : null,
+      validator: (value) {
+        if (value == null || value.isEmpty) return 'هذا الحقل مطلوب';
+        if (icon == Icons.email && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+          return 'البريد الإلكتروني غير صالح';
+        }
+        if (icon == Icons.lock && value.length < 8) {
+          return 'كلمة المرور يجب أن تكون 8 أحرف على الأقل';
+        }
+        return null;
+      },
     );
   }
 }

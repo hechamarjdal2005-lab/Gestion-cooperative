@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:gcoop/features/cooperative/providers/expenses_provider.dart';
 import 'package:gcoop/features/cooperative/providers/products_provider.dart';
 import 'package:gcoop/features/auth/providers/auth_provider.dart';
@@ -7,7 +8,6 @@ import 'package:gcoop/core/constants/colors.dart';
 import 'package:gcoop/shared/models/expense.dart';
 import 'package:gcoop/shared/models/product.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import 'package:gcoop/features/cooperative/providers/incomes_provider.dart';
 import 'package:gcoop/shared/models/income.dart';
 
@@ -30,15 +30,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   late DateTime _date;
   bool _isLoading = false;
 
-  // Task 1: Product selection state
   Product? _selectedProduct;
-  int _quantity = 1;
-
-  final Map<int, String> arabicMonths = {
-    1: 'يناير', 2: 'فبراير', 3: 'مارس', 4: 'أبريل',
-    5: 'مايو', 6: 'يونيو', 7: 'يوليوز', 8: 'غشت', 9: 'شتنبر',
-    10: 'أكتوبر', 11: 'نونبر', 12: 'دجنبر'
-  };
 
   late final List<String> _categories;
 
@@ -74,12 +66,12 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       final qty = double.tryParse(_quantityController.text) ?? 0;
       final price = double.tryParse(_unitPriceController.text) ?? 0;
       final total = qty * price;
-      _amountController.text = total.toStringAsFixed(2);
+      _amountController.text = NumberFormat('#,##0.00', 'en_US').format(total);
     }
   }
 
   String _formatDate(DateTime date) {
-    return "${date.year}/${date.month.toString().padLeft(2, '0')}/${date.day.toString().padLeft(2, '0')}";
+    return DateFormat('yyyy/MM/dd', 'en_US').format(date);
   }
 
   Future<void> _save() async {
@@ -90,7 +82,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       final profile = await ref.read(profileProvider.future);
       if (profile?.cooperativeId == null) throw 'Cooperative not found';
 
-      final amount = double.parse(_amountController.text);
+      final amount = double.parse(_amountController.text.replaceAll(',', ''));
       
       final data = {
         'cooperative_id': profile!.cooperativeId,
@@ -158,7 +150,6 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Category Selection
               const Text('الفئة', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
@@ -179,7 +170,6 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Task 1: Product Selector for "مبيعات"
               if (widget.isIncome && _category == 'مبيعات') ...[
                 const Text('المنتج', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 8),
@@ -197,7 +187,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                     onChanged: (val) {
                       setState(() {
                         _selectedProduct = val;
-                        _unitPriceController.text = val?.price.toStringAsFixed(2) ?? '0.00';
+                        _unitPriceController.text = val != null ? NumberFormat('#,##0.00', 'en_US').format(val.price) : '0.00';
                         _calculateTotal();
                       });
                     },
@@ -253,7 +243,6 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                 const SizedBox(height: 20),
               ],
 
-              // Amount Field (Read-only for "مبيعات")
               const Text('المبلغ (DH)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 8),
               TextFormField(
@@ -270,7 +259,6 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Date Picker
               const Text('التاريخ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 8),
               InkWell(
@@ -280,6 +268,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
                     initialDate: _date,
                     firstDate: DateTime(2020),
                     lastDate: DateTime.now(),
+                    locale: const Locale('en', 'US'),
                   );
                   if (picked != null) setState(() => _date = picked);
                 },
@@ -300,7 +289,6 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Notes
               const Text('ملاحظة (اختياري)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 8),
               TextFormField(

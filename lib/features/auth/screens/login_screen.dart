@@ -30,6 +30,22 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    // Email validation
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('البريد الإلكتروني غير صالح')),
+      );
+      return;
+    }
+
+    // Password validation (min 8 chars)
+    if (password.length < 8) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('كلمة المرور يجب أن تكون 8 أحرف على الأقل')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
       await Supabase.instance.client.auth.signInWithPassword(

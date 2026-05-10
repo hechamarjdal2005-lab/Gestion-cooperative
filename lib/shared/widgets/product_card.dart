@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:gcoop/shared/models/product.dart';
 import 'package:gcoop/core/constants/colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -63,7 +64,6 @@ class ProductCard extends ConsumerWidget {
         padding: const EdgeInsets.all(12.0),
         child: Row(
           children: [
-            // Product Image (Right side in RTL)
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: product.photoUrl != null
@@ -88,7 +88,6 @@ class ProductCard extends ConsumerWidget {
                     ),
             ),
             const SizedBox(width: 12),
-            // Product Info (Center)
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,7 +110,6 @@ class ProductCard extends ConsumerWidget {
                 ],
               ),
             ),
-            // Price and Stock (Left side in RTL)
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -158,7 +156,7 @@ class ProductCard extends ConsumerWidget {
                       ],
                     ),
                     Text(
-                      '${product.price.toStringAsFixed(2)} DH',
+                      '${NumberFormat('#,##0.00', 'en_US').format(product.price)} DH',
                       style: const TextStyle(
                         color: Color(0xFF1E3A8A),
                         fontWeight: FontWeight.bold,

@@ -1,10 +1,12 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:gcoop/core/constants/colors.dart';
 import 'package:gcoop/features/admin/screens/accounts_screen.dart';
 import 'package:gcoop/features/admin/providers/admin_provider.dart';
+import 'package:gcoop/features/auth/providers/auth_provider.dart';
 import 'package:gcoop/shared/models/cooperative.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
@@ -62,7 +64,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       leading: IconButton(
         icon: const Icon(Icons.logout, color: AppColors.primary),
         onPressed: () async {
-          await Supabase.instance.client.auth.signOut();
+          await signOut(ref);
           if (mounted) context.go('/login');
         },
         tooltip: 'تسجيل الخروج',
@@ -219,7 +221,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
           ),
           _buildSmallStatCard(
             'المبيعات',
-            '${(stats['revenue'] as double).toStringAsFixed(2)} DH',
+            '${intl.NumberFormat('#,##0.00', 'en_US').format(stats['revenue'] as double)} DH',
             Icons.account_balance_wallet,
             Colors.green[700]!,
           ),
@@ -353,7 +355,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
             ),
           ),
           const Text(
-            'اليوم', // Or actual date
+            'اليوم', 
             style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
           ),
           PopupMenuButton(

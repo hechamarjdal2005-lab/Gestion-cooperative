@@ -21,14 +21,14 @@ class DocumentTile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(document.number, style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text('\${document.total.toStringAsFixed(2)} DH', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+            Text('${NumberFormat('#,##0.00', 'en_US').format(document.total)} DH', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
           ],
         ),
         subtitle: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(document.clientName ?? document.supplierName ?? 'بدون اسم'),
-            Text(DateFormat('yyyy/MM/dd').format(document.date)),
+            Text(DateFormat('yyyy/MM/dd', 'en_US').format(document.date)),
           ],
         ),
         leading: _buildTypeBadge(document.type),

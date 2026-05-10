@@ -112,6 +112,14 @@ class _AddSupplierScreenState extends ConsumerState<AddSupplierScreen> {
                 controller: _emailController,
                 decoration: const InputDecoration(labelText: 'البريد الإلكتروني'),
                 keyboardType: TextInputType.emailAddress,
+                validator: (val) {
+                  if (val != null && val.isNotEmpty) {
+                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val)) {
+                      return 'البريد الإلكتروني غير صالح';
+                    }
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 32),
               ElevatedButton(

@@ -68,13 +68,13 @@ class _SetupCooperativeScreenState extends ConsumerState<SetupCooperativeScreen>
       // 2. إنشاء سجل التعاونية الجديد (INSERT)
       // نستخدم select() للحصول على البيانات المدخلة بما فيها الـ ID الجديد
       final newCoop = await supabase.from('cooperatives').insert({
-        'name_ar': _nameArController.text,
-        'name_fr': _nameFrController.text,
-        'address': _addressController.text,
-        'phone': _phoneController.text,
-        'email': _emailController.text,
-        'ice': _iceController.text,
-        'rc': _rcController.text,
+        'name_ar': _nameArController.text.trim(),
+        'name_fr': _nameFrController.text.trim(),
+        'address': _addressController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'email': _emailController.text.trim(),
+        'ice': _iceController.text.trim(),
+        'rc': _rcController.text.trim(),
         if (logoUrl != null) 'logo_url': logoUrl,
       }).select().single();
 
@@ -269,11 +269,17 @@ class _SetupCooperativeScreenState extends ConsumerState<SetupCooperativeScreen>
         ),
         textDirection: isRtl ? TextDirection.rtl : null,
         keyboardType: keyboardType,
-        validator: required
-            ? (value) => value == null || value.isEmpty 
-                ? (Localizations.localeOf(context).languageCode == 'ar' ? 'هذا الحقل مطلوب' : 'Ce champ est requis') 
-                : null
-            : null,
+        validator: (value) {
+          if (required && (value == null || value.isEmpty)) {
+            return (Localizations.localeOf(context).languageCode == 'ar' ? 'هذا الحقل مطلوب' : 'Ce champ est requis');
+          }
+          if (keyboardType == TextInputType.emailAddress && value != null && value.isNotEmpty) {
+            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+              return (Localizations.localeOf(context).languageCode == 'ar' ? 'البريد الإلكتروني غير صالح' : 'Email invalide');
+            }
+          }
+          return null;
+        },
       ),
     );
   }

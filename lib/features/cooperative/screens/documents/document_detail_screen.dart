@@ -241,7 +241,7 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
                       const Icon(Icons.calendar_today, size: 12, color: AppColors.textSecondary),
                       const SizedBox(width: 4),
                       Text(
-                        DateFormat('dd/MM/yyyy').format(widget.document.date),
+                        DateFormat('dd/MM/yyyy', 'en_US').format(widget.document.date),
                         style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
                       ),
                     ],
@@ -388,8 +388,8 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
                   Expanded(flex: 1, child: Text(item.quantity.toString(), textAlign: TextAlign.center, style: const TextStyle(fontSize: 12))),
                   Expanded(flex: 1, child: Text(item.unit, textAlign: TextAlign.center, style: const TextStyle(fontSize: 11))),
                   if (showPrices) ...[
-                    Expanded(flex: 1, child: Text(item.unitPrice.toStringAsFixed(2), textAlign: TextAlign.right, style: const TextStyle(fontSize: 11))),
-                    Expanded(flex: 1, child: Text(item.total.toStringAsFixed(2), textAlign: TextAlign.right, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
+                    Expanded(flex: 1, child: Text(NumberFormat('#,##0.00', 'en_US').format(item.unitPrice), textAlign: TextAlign.right, style: const TextStyle(fontSize: 11))),
+                    Expanded(flex: 1, child: Text(NumberFormat('#,##0.00', 'en_US').format(item.total), textAlign: TextAlign.right, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold))),
                   ],
                 ],
               ),
@@ -410,15 +410,15 @@ class _DocumentDetailScreenState extends ConsumerState<DocumentDetailScreen> {
       ),
       child: Column(
         children: [
-          _totalRow(l10n.subtotal, '${_subtotal.toStringAsFixed(2)} DH'),
+          _totalRow(l10n.subtotal, '${NumberFormat('#,##0.00', 'en_US').format(_subtotal)} DH'),
           if (widget.document.discount > 0)
-            _totalRow('${l10n.discount} (${widget.document.discount}%)', '-${_discountAmount.toStringAsFixed(2)} DH', isNegative: true),
+            _totalRow('${l10n.discount} (${widget.document.discount}%)', '-${NumberFormat('#,##0.00', 'en_US').format(_discountAmount)} DH', isNegative: true),
           if (widget.document.tvaRate > 0)
-            _totalRow('${l10n.tva} (${widget.document.tvaRate}%)', '${_tvaAmount.toStringAsFixed(2)} DH'),
+            _totalRow('${l10n.tva} (${widget.document.tvaRate}%)', '${NumberFormat('#,##0.00', 'en_US').format(_tvaAmount)} DH'),
           if (widget.document.deliveryFees > 0)
-            _totalRow(l10n.deliveryFees, '${widget.document.deliveryFees.toStringAsFixed(2)} DH'),
+            _totalRow(l10n.deliveryFees, '${NumberFormat('#,##0.00', 'en_US').format(widget.document.deliveryFees)} DH'),
           const Divider(height: 20),
-          _totalRow(l10n.totalToPay, '${_total.toStringAsFixed(2)} DH', isTotal: true),
+          _totalRow(l10n.totalToPay, '${NumberFormat('#,##0.00', 'en_US').format(_total)} DH', isTotal: true),
         ],
       ),
     );

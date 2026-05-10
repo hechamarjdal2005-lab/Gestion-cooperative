@@ -295,7 +295,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
                   ],
                 ),
                 Text(
-                  '${doc.total.toStringAsFixed(2)} DH',
+                  '${NumberFormat('#,##0.00', 'en_US').format(doc.total)} DH',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: primaryBlue,

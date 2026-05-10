@@ -74,7 +74,7 @@ class DashboardScreen extends ConsumerWidget {
                   },
                   const SizedBox(height: 4),
                   Text(
-                    DateFormat('EEEE, d MMMM yyyy', Localizations.localeOf(context).languageCode).format(DateTime.now()),
+                    DateFormat('EEEE, d MMMM yyyy', 'en_US').format(DateTime.now()),
                     style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
                   ),
                 ],
@@ -169,7 +169,7 @@ class DashboardScreen extends ConsumerWidget {
                   .fold(0.0, (sum, d) => sum + d.total);
               return _StatCard(
                 label: l10n.dailySales,
-                value: '${todayTotal.toStringAsFixed(0)} DH',
+                value: '${NumberFormat('#,##0', 'en_US').format(todayTotal)} DH',
                 icon: Icons.trending_up,
                 color: Colors.green,
                 trend: '', 
@@ -219,7 +219,7 @@ class DashboardScreen extends ConsumerWidget {
                   .fold(0.0, (sum, e) => sum + e.amount);
               return _StatCard(
                 label: l10n.expenses,
-                value: '${todayTotal.toStringAsFixed(0)} DH',
+                value: '${NumberFormat('#,##0', 'en_US').format(todayTotal)} DH',
                 icon: Icons.payments,
                 color: Colors.red,
                 trend: '',
@@ -246,7 +246,7 @@ class DashboardScreen extends ConsumerWidget {
             items.add(_ActivityItem(
               title: doc.typeLabel,
               subtitle: doc.clientName ?? l10n.unknown,
-              amount: '${doc.total.toStringAsFixed(2)} DH',
+              amount: '${NumberFormat('#,##0.00', 'en_US').format(doc.total)} DH',
               date: doc.date,
               icon: Icons.description,
               color: Colors.blue,
@@ -256,7 +256,7 @@ class DashboardScreen extends ConsumerWidget {
             items.add(_ActivityItem(
               title: exp.category,
               subtitle: exp.note ?? l10n.expenses,
-              amount: '-${exp.amount.toStringAsFixed(2)} DH',
+              amount: '-${NumberFormat('#,##0.00', 'en_US').format(exp.amount)} DH',
               date: exp.date,
               icon: Icons.payments,
               color: Colors.red,
@@ -296,7 +296,7 @@ class DashboardScreen extends ConsumerWidget {
                         fontWeight: FontWeight.bold, 
                         color: item.amount.startsWith('-') ? Colors.red : Colors.black
                       )),
-                      Text(DateFormat('HH:mm').format(item.date), style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                      Text(DateFormat('HH:mm', 'en_US').format(item.date), style: const TextStyle(fontSize: 10, color: Colors.grey)),
                     ],
                   ),
                 );

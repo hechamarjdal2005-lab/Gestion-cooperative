@@ -14,7 +14,6 @@ class IncomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final incomesAsync = ref.watch(incomesProvider);
     final l10n = AppLocalizations.of(context)!;
-    const primaryBlue = Color(0xFF1E3A8A);
 
     return switch (incomesAsync) {
       AsyncData(:final value) => value.isEmpty
@@ -34,7 +33,6 @@ class IncomeScreen extends ConsumerWidget {
 
   Widget _buildIncomeItem(BuildContext context, WidgetRef ref, Income income) {
     final l10n = AppLocalizations.of(context)!;
-    const primaryBlue = Color(0xFF1E3A8A);
     const successGreen = Colors.green;
     
     String categoryName = income.category;
@@ -91,14 +89,14 @@ class IncomeScreen extends ConsumerWidget {
           ],
         ),
         subtitle: Text(
-          DateFormat('HH:mm - yyyy/MM/dd').format(income.date),
+          DateFormat('HH:mm - yyyy/MM/dd', 'en_US').format(income.date),
           style: const TextStyle(color: Colors.grey, fontSize: 12),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '${income.amount.toStringAsFixed(2)} DH',
+              '${NumberFormat('#,##0.00', 'en_US').format(income.amount)} DH',
               style: const TextStyle(
                 color: successGreen,
                 fontWeight: FontWeight.bold,
@@ -218,15 +216,13 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
       final total = qty * price;
       if (total > 0) {
         _amountController.removeListener(_updateFieldsFromAmount);
-        _amountController.text = total.toStringAsFixed(2);
+        _amountController.text = NumberFormat('#,##0.00', 'en_US').format(total);
         _amountController.addListener(_updateFieldsFromAmount);
       }
     }
   }
 
-  void _updateFieldsFromAmount() {
-    // If user manually edits amount, we don't necessarily update qty/price
-  }
+  void _updateFieldsFromAmount() {}
 
   @override
   void dispose() {
@@ -299,7 +295,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                         if (value != null) {
                           setState(() {
                             _selectedProduct = value;
-                            _unitPriceController.text = value.price.toStringAsFixed(2);
+                            _unitPriceController.text = NumberFormat('#,##0.00', 'en_US').format(value.price);
                           });
                         }
                       },
@@ -343,14 +339,14 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       if (value == null || value.isEmpty) return l10n.error;
-                      if (double.tryParse(value) == null) return l10n.error;
+                      if (double.tryParse(value.replaceAll(',', '')) == null) return l10n.error;
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
                   ListTile(
                     title: Text(l10n.date),
-                    subtitle: Text(DateFormat('yyyy/MM/dd').format(_selectedDate)),
+                    subtitle: Text(DateFormat('yyyy/MM/dd', 'en_US').format(_selectedDate)),
                     trailing: const Icon(Icons.calendar_today),
                     onTap: () async {
                       final picked = await showDatePicker(
@@ -358,6 +354,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                         initialDate: _selectedDate,
                         firstDate: DateTime(2000),
                         lastDate: DateTime(2100),
+                        locale: const Locale('en', 'US'),
                       );
                       if (picked != null) setState(() => _selectedDate = picked);
                     },
@@ -401,7 +398,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
     try {
       await ref.read(incomesProvider.notifier).addIncome({
         'category': _selectedCategory,
-        'amount': double.parse(_amountController.text),
+        'amount': double.parse(_amountController.text.replaceAll(',', '')),
         'date': _selectedDate.toIso8601String(),
         'note': _noteController.text,
         'source': 'manual',

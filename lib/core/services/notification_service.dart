@@ -26,13 +26,11 @@ class NotificationService {
 
   static Future<void> checkAndSendMonthlySummary(WidgetRef ref) async {
     final now = DateTime.now();
-    // Only on the 1st of the month (or any day if we want to ensure it's seen once a month)
-    // Requirement says "On the 1st of every month"
     if (now.day != 1) return;
 
     final prefs = await SharedPreferences.getInstance();
     final lastSentMonth = prefs.getString('last_monthly_summary_sent');
-    final currentMonthStr = DateFormat('yyyy-MM').format(now);
+    final currentMonthStr = DateFormat('yyyy-MM', 'en_US').format(now);
 
     if (lastSentMonth == currentMonthStr) return;
 
@@ -67,7 +65,7 @@ class NotificationService {
   }) async {
     final monthName = DateFormat('MMMM', 'ar').format(month);
     final String title = 'ملخص شهر $monthName';
-    final String body = 'المداخيل: ${income.toStringAsFixed(2)} درهم، المصاريف: ${expenses.toStringAsFixed(2)} درهم، الرصيد: ${balance.toStringAsFixed(2)} درهم';
+    final String body = 'المداخيل: ${NumberFormat('#,##0.00', 'en_US').format(income)} درهم، المصاريف: ${NumberFormat('#,##0.00', 'en_US').format(expenses)} درهم، الرصيد: ${NumberFormat('#,##0.00', 'en_US').format(balance)} درهم';
 
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
@@ -90,8 +88,6 @@ class NotificationService {
   }
 
   static Future<void> scheduleMonthlyNotification() async {
-    // This is complex because we need the data. 
-    // Usually handled by a background task that runs on the 1st, 
-    // calculates the values, and calls showMonthlySummary.
+    // Background task implementation...
   }
 }
